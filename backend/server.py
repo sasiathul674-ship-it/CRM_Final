@@ -43,10 +43,10 @@ def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
 def get_password_hash(password):
-    # Truncate password to 72 bytes for bcrypt compatibility
-    if len(password.encode('utf-8')) > 72:
-        password = password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
-    return pwd_context.hash(password)
+    # Pre-hash with SHA-256 to handle long passwords and ensure bcrypt compatibility
+    digest = hashlib.sha256(password.encode('utf-8')).digest()
+    encoded = base64.b64encode(digest).decode('ascii')
+    return pwd_context.hash(encoded)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
