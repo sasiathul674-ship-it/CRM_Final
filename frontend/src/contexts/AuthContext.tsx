@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 
 interface User {
@@ -14,8 +13,9 @@ interface AuthContextType {
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string, company?: string) => Promise<void>;
-  logout: () => Promise<void>;
+  logout: () => void;
   isLoading: boolean;
+  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,22 +30,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
-
-  useEffect(() => {
-    loadStoredAuth();
-  }, []);
-
-  const loadStoredAuth = async () => {
-    try {
-      const storedToken = await AsyncStorage.getItem('token');
-      if (storedToken) {
-        setToken(storedToken);
-        await fetchUser(storedToken);
-      }
-    } catch (error) {
-      console.error('Error loading stored auth:', error);
-    }
-  };
 
   const fetchUser = async (authToken: string) => {
     try {
@@ -64,7 +48,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     } catch (error) {
       console.error('Error fetching user:', error);
-      await logout();
+      logout();
     }
   };
 
@@ -83,7 +67,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (response.ok) {
         const { access_token } = data;
-        await AsyncStorage.setItem('token', access_token);
         setToken(access_token);
         await fetchUser(access_token);
       } else {
@@ -112,7 +95,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (response.ok) {
         const { access_token } = data;
-        await AsyncStorage.setItem('token', access_token);
         setToken(access_token);
         await fetchUser(access_token);
       } else {
@@ -126,14 +108,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const logout = async () => {
-    try {
-      await AsyncStorage.removeItem('token');
-      setToken(null);
-      setUser(null);
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
+  const logout = () => {
+    setToken(null);
+    setUser(null);
   };
 
   return (
@@ -145,6 +122,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         register,
         logout,
         isLoading,
+        isAuthenticated: !!user && !!token,
       }}
     >
       {children}
