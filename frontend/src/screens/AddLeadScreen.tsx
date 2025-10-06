@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +17,7 @@ import { useLeads } from '../hooks/useLeads';
 
 const STAGES = ['New Leads', 'Contacted', 'Follow-up', 'Negotiation', 'Closed'];
 const PRIORITIES = ['low', 'medium', 'high'];
+const LEAD_SOURCES = ['Website', 'Referral', 'Cold Call', 'Social Media', 'Email Campaign', 'Other'];
 
 const getPriorityColor = (priority: string) => {
   switch (priority) {
