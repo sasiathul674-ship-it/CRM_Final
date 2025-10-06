@@ -161,4 +161,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#9CA3AF',
   },
+  activityItem: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+  },
+  activityText: {
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '500',
+  },
+  activityDate: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 4,
+  },
 });
