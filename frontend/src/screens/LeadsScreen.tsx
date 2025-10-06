@@ -148,7 +148,7 @@ export default function LeadsScreen({ navigation }: any) {
             )}
           </ScrollView>
         ) : (
-          <PremiumKanbanBoard 
+          <DraggableKanbanBoard 
             leads={filteredLeads}
             onLeadPress={handleLeadPress}
             refreshControl={
