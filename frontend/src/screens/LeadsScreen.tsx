@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLeads } from '../hooks/useLeads';
-import PremiumKanbanBoard from '../components/PremiumKanbanBoard';
+import DraggableKanbanBoard from '../components/DraggableKanbanBoard';
 import LoadingScreen from '../components/LoadingScreen';
 
 export default function LeadsScreen({ navigation }: any) {
