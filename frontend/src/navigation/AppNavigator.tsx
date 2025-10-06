@@ -26,8 +26,7 @@ function LeadsStackNavigator() {
   );
 }
 
-// Main Tab Navigator
-function TabNavigator() {
+export default function AppNavigator() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -69,13 +68,5 @@ function TabNavigator() {
       <Tab.Screen name="Card" component={BusinessCardScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
-  );
-}
-
-export default function AppNavigator() {
-  return (
-    <NavigationContainer>
-      <TabNavigator />
-    </NavigationContainer>
   );
 }
