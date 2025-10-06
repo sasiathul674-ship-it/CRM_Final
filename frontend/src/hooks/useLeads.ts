@@ -224,6 +224,7 @@ export function useLeads() {
     error,
     fetchLeads,
     createLead,
+    updateLead,
     updateLeadStage,
     deleteLead,
   };
