@@ -145,14 +145,19 @@ export default function AddLeadScreen({ navigation }: any) {
             <Text style={styles.sectionTitle}>Contact Information</Text>
             
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Name *</Text>
+              <Text style={styles.label}>Lead Name *</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, errors.name && styles.inputError]}
                 value={name}
-                onChangeText={setName}
-                placeholder="Enter lead name"
+                onChangeText={(text) => {
+                  setName(text);
+                  clearError('name');
+                }}
+                placeholder="Enter lead's full name"
                 autoCapitalize="words"
+                editable={!isSubmitting}
               />
+              {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
             </View>
 
             <View style={styles.inputContainer}>
@@ -161,32 +166,46 @@ export default function AddLeadScreen({ navigation }: any) {
                 style={styles.input}
                 value={company}
                 onChangeText={setCompany}
-                placeholder="Company name"
+                placeholder="Company or organization name"
                 autoCapitalize="words"
+                editable={!isSubmitting}
               />
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Phone</Text>
+              <Text style={styles.label}>Phone Number {!email.trim() && '*'}</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, errors.phone && styles.inputError]}
                 value={phone}
-                onChangeText={setPhone}
-                placeholder="Phone number"
+                onChangeText={(text) => {
+                  setPhone(text);
+                  clearError('phone');
+                  clearError('contact');
+                }}
+                placeholder="+1 (555) 123-4567"
                 keyboardType="phone-pad"
+                editable={!isSubmitting}
               />
+              {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email</Text>
+              <Text style={styles.label}>Email Address {!phone.trim() && '*'}</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, errors.email && styles.inputError]}
                 value={email}
-                onChangeText={setEmail}
-                placeholder="Email address"
+                onChangeText={(text) => {
+                  setEmail(text);
+                  clearError('email');
+                  clearError('contact');
+                }}
+                placeholder="name@company.com"
                 keyboardType="email-address"
                 autoCapitalize="none"
+                editable={!isSubmitting}
               />
+              {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+              {errors.contact && <Text style={styles.errorText}>{errors.contact}</Text>}
             </View>
 
             <View style={styles.inputContainer}>
