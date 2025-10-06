@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import Constants from 'expo-constants';
+import { Alert } from 'react-native';
 
 interface User {
   id: string;
@@ -11,8 +12,8 @@ interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string, company?: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<boolean>;
+  register: (email: string, password: string, name: string, company?: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
   isAuthenticated: boolean;
@@ -43,16 +44,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (response.ok) {
         const userData = await response.json();
         setUser(userData);
+        return true;
       } else {
         throw new Error('Failed to fetch user');
       }
     } catch (error) {
       console.error('Error fetching user:', error);
       logout();
+      return false;
     }
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
@@ -68,19 +71,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (response.ok) {
         const { access_token } = data;
         setToken(access_token);
-        await fetchUser(access_token);
+        const userFetched = await fetchUser(access_token);
+        
+        if (userFetched) {
+          Alert.alert('Welcome Back!', `Good to see you again!`, [
+            { text: 'Continue', style: 'default' }
+          ]);
+          return true;
+        }
       } else {
-        throw new Error(data.detail || 'Login failed');
+        const errorMessage = data.detail || 'Invalid email or password';
+        Alert.alert('Login Failed', errorMessage);
+        return false;
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
-      throw error;
+      Alert.alert('Connection Error', 'Unable to connect to server. Please check your internet connection.');
+      return false;
     } finally {
       setIsLoading(false);
     }
+    return false;
   };
 
-  const register = async (email: string, password: string, name: string, company?: string) => {
+  const register = async (email: string, password: string, name: string, company?: string): Promise<boolean> => {
     setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
@@ -96,16 +110,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (response.ok) {
         const { access_token } = data;
         setToken(access_token);
-        await fetchUser(access_token);
+        const userFetched = await fetchUser(access_token);
+        
+        if (userFetched) {
+          Alert.alert(
+            'Welcome to Strike!', 
+            'Your account has been created successfully. Let\'s set up your CRM!', 
+            [{ text: 'Get Started', style: 'default' }]
+          );
+          return true;
+        }
       } else {
-        throw new Error(data.detail || 'Registration failed');
+        const errorMessage = data.detail || 'Registration failed';
+        if (errorMessage.includes('Email already registered')) {
+          Alert.alert('Account Exists', 'An account with this email already exists. Please sign in instead.');
+        } else {
+          Alert.alert('Registration Failed', errorMessage);
+        }
+        return false;
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
-      throw error;
+      Alert.alert('Connection Error', 'Unable to connect to server. Please check your internet connection.');
+      return false;
     } finally {
       setIsLoading(false);
     }
+    return false;
   };
 
   const logout = () => {
