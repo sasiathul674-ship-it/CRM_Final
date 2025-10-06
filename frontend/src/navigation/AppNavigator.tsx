@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 // Screens
 import DashboardScreen from '../screens/DashboardScreen';
-import LeadsScreen from '../screens/LeadsScreen';
+import KanbanScreen from '../screens/KanbanScreen';
 import BusinessCardScreen from '../screens/BusinessCardScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import LeadDetailScreen from '../screens/LeadDetailScreen';
