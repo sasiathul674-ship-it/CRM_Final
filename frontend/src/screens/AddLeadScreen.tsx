@@ -40,14 +40,40 @@ export default function AddLeadScreen({ navigation }: any) {
   const [address, setAddress] = useState('');
   const [stage, setStage] = useState('New Leads');
   const [priority, setPriority] = useState('medium');
+  const [leadSource, setLeadSource] = useState('Website');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
 
-  const { createLead } = useLeads();
+  const { createLead, error } = useLeads();
+
+  const validateForm = () => {
+    const newErrors: {[key: string]: string} = {};
+    
+    if (!name.trim()) {
+      newErrors.name = 'Lead name is required';
+    } else if (name.trim().length < 2) {
+      newErrors.name = 'Name must be at least 2 characters';
+    }
+    
+    if (!phone.trim() && !email.trim()) {
+      newErrors.contact = 'Either phone number or email is required';
+    }
+    
+    if (phone.trim() && !/^[\+]?[\s\-\(\)0-9]{10,}$/.test(phone.trim())) {
+      newErrors.phone = 'Please enter a valid phone number';
+    }
+    
+    if (email.trim() && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email.trim())) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async () => {
-    if (!name.trim()) {
-      Alert.alert('Error', 'Lead name is required');
+    if (!validateForm()) {
       return;
     }
 
@@ -62,22 +88,38 @@ export default function AddLeadScreen({ navigation }: any) {
         address: address.trim() || undefined,
         stage,
         priority,
-        notes: notes.trim() || undefined,
+        notes: notes.trim() ? `Source: ${leadSource}\\n\\n${notes.trim()}` : `Source: ${leadSource}`,
       };
 
+      console.log('Submitting lead data:', leadData);
       const newLead = await createLead(leadData);
       
       if (newLead) {
-        Alert.alert('Success', 'Lead created successfully', [
-          { text: 'OK', onPress: () => navigation.goBack() },
+        Alert.alert('Lead Added Successfully!', 'Your new lead has been added to the pipeline.', [
+          { 
+            text: 'View Pipeline', 
+            onPress: () => {
+              navigation.goBack();
+              // Navigate to Leads tab
+              navigation.navigate('Leads', { screen: 'LeadsList' });
+            }
+          },
         ]);
       } else {
-        Alert.alert('Error', 'Failed to create lead');
+        const errorMessage = error || 'Unable to create lead. Please check your connection and try again.';
+        Alert.alert('Failed to Add Lead', errorMessage);
       }
-    } catch (error) {
-      Alert.alert('Error', 'Something went wrong');
+    } catch (err: any) {
+      console.error('Lead creation error:', err);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const clearError = (field: string) => {
+    if (errors[field]) {
+      setErrors({...errors, [field]: undefined});
     }
   };
 
