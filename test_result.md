@@ -220,6 +220,18 @@ frontend:
           agent: "main"
           comment: "Created placeholder screens with proper mobile UI, tab navigation working"
 
+  - task: "Kanban Board with Drag-and-Drop"
+    implemented: true
+    working: false
+    file: "DraggableKanbanBoard.tsx, DraggableLeadCard.tsx, LeadsScreen.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "main"
+          comment: "Implemented premium Kanban board with smooth drag-and-drop functionality using react-native-gesture-handler, haptic feedback, smooth animations, undo functionality, and mobile-optimized touch interactions. Need to test integration with backend."
+
   - task: "Mobile-First UI Design"
     implemented: true
     working: true
