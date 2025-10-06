@@ -1,10 +1,49 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
+import Constants from 'expo-constants';
 
 export default function DashboardScreen() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+  const [stats, setStats] = useState({
+    total_leads: 0,
+    this_week_calls: 0,
+    this_week_emails: 0,
+    leads_by_stage: {},
+    recent_activities: []
+  });
+  const [loading, setLoading] = useState(true);
+
+  const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+
+  useEffect(() => {
+    if (token) {
+      fetchDashboardStats();
+    }
+  }, [token]);
+
+  const fetchDashboardStats = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/dashboard/stats`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data);
+      } else {
+        console.error('Failed to fetch dashboard stats');
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -16,15 +55,15 @@ export default function DashboardScreen() {
 
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>0</Text>
+            <Text style={styles.statNumber}>{loading ? '...' : stats.total_leads}</Text>
             <Text style={styles.statLabel}>Total Leads</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>0</Text>
+            <Text style={styles.statNumber}>{loading ? '...' : stats.this_week_calls}</Text>
             <Text style={styles.statLabel}>This Week Calls</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>0</Text>
+            <Text style={styles.statNumber}>{loading ? '...' : stats.this_week_emails}</Text>
             <Text style={styles.statLabel}>Emails Sent</Text>
           </View>
           <View style={styles.statCard}>
@@ -35,9 +74,24 @@ export default function DashboardScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recent Activity</Text>
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>No recent activities</Text>
-          </View>
+          {stats.recent_activities && stats.recent_activities.length > 0 ? (
+            <View>
+              {stats.recent_activities.slice(0, 5).map((activity: any, index: number) => (
+                <View key={index} style={styles.activityItem}>
+                  <Text style={styles.activityText}>
+                    {activity.activity_type} - {activity.content}
+                  </Text>
+                  <Text style={styles.activityDate}>
+                    {new Date(activity.created_at).toLocaleDateString()}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>No recent activities</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
