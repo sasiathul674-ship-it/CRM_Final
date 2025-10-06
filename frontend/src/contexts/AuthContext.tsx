@@ -17,6 +17,8 @@ interface AuthContextType {
   logout: () => void;
   isLoading: boolean;
   isAuthenticated: boolean;
+  needsOnboarding: boolean;
+  completeOnboarding: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,6 +31,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
   const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -55,6 +58,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const checkOnboardingStatus = async (authToken: string) => {
+    try {
+      // Check if user has business card (indicates completed onboarding)
+      const response = await fetch(`${API_BASE_URL}/api/business-card`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      // If no business card (404), user needs onboarding
+      return response.status === 404;
+    } catch (error) {
+      console.error('Error checking onboarding status:', error);
+      return true; // Default to needing onboarding if check fails
+    }
+  };
+
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
@@ -74,9 +95,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const userFetched = await fetchUser(access_token);
         
         if (userFetched) {
-          Alert.alert('Welcome Back!', `Good to see you again!`, [
-            { text: 'Continue', style: 'default' }
-          ]);
+          const needsOnboarding = await checkOnboardingStatus(access_token);
+          setNeedsOnboarding(needsOnboarding);
+          
+          if (!needsOnboarding) {
+            Alert.alert('Welcome Back! 👋', `Good to see you again!`, [
+              { text: 'Continue', style: 'default' }
+            ]);
+          }
           return true;
         }
       } else {
@@ -113,8 +139,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const userFetched = await fetchUser(access_token);
         
         if (userFetched) {
+          setNeedsOnboarding(true); // New users always need onboarding
           Alert.alert(
-            'Welcome to Strike!', 
+            'Welcome to Strike! 🎉', 
             'Your account has been created successfully. Let\'s set up your CRM!', 
             [{ text: 'Get Started', style: 'default' }]
           );
@@ -142,6 +169,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = () => {
     setToken(null);
     setUser(null);
+    setNeedsOnboarding(false);
+  };
+
+  const completeOnboarding = () => {
+    setNeedsOnboarding(false);
   };
 
   return (
@@ -154,6 +186,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         logout,
         isLoading,
         isAuthenticated: !!user && !!token,
+        needsOnboarding,
+        completeOnboarding,
       }}
     >
       {children}
