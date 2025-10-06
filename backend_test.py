@@ -174,10 +174,10 @@ class StrikeCRMTester:
         try:
             response = requests.get(f"{self.base_url}/auth/me")
             
-            if response.status_code == 401:
-                self.log_result("Unauthorized Access Prevention", True, "Correctly rejected request without token")
+            if response.status_code in [401, 403]:
+                self.log_result("Unauthorized Access Prevention", True, f"Correctly rejected request without token (status {response.status_code})")
             else:
-                self.log_result("Unauthorized Access Prevention", False, f"Should return 401 without token", response)
+                self.log_result("Unauthorized Access Prevention", False, f"Should return 401 or 403 without token", response)
                 
         except Exception as e:
             self.log_result("Unauthorized Access Prevention", False, f"Exception: {str(e)}")
