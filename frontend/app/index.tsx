@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthProvider } from '../src/contexts/AuthContext';
 import AuthNavigator from '../src/navigation/AuthNavigator';
 import AppNavigator from '../src/navigation/AppNavigator';
