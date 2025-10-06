@@ -18,7 +18,7 @@ const Stack = createStackNavigator();
 function LeadsStackNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="LeadsList" component={LeadsScreen} />
+      <Stack.Screen name="LeadsList" component={KanbanScreen} />
       <Stack.Screen name="LeadDetail" component={LeadDetailScreen} />
       <Stack.Screen name="AddLead" component={AddLeadScreen} />
     </Stack.Navigator>
