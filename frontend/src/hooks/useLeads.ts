@@ -152,6 +152,41 @@ export function useLeads() {
     }
   };
 
+  const updateLead = async (leadId: string, leadData: Partial<Lead>): Promise<boolean> => {
+    if (!token) return false;
+    
+    setError(null);
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/leads/${leadId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(leadData),
+      });
+
+      if (response.ok) {
+        const updatedLead = await response.json();
+        setLeads(prev => 
+          prev.map(lead => 
+            lead.id === leadId ? updatedLead : lead
+          )
+        );
+        return true;
+      } else {
+        const errorText = await response.text();
+        console.error('Update lead failed:', response.status, errorText);
+        throw new Error('Failed to update lead');
+      }
+    } catch (err: any) {
+      setError(err.message);
+      console.error('Error updating lead:', err);
+      return false;
+    }
+  };
+
   const deleteLead = async (leadId: string): Promise<boolean> => {
     if (!token) return false;
     
