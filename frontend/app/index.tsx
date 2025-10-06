@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
 import AuthNavigator from '../src/navigation/AuthNavigator';
 import AppNavigator from '../src/navigation/AppNavigator';
@@ -18,9 +19,11 @@ function AppContent() {
 export default function Index() {
   return (
     <AuthProvider>
-      <View style={styles.container}>
-        <AppContent />
-      </View>
+      <NavigationContainer>
+        <View style={styles.container}>
+          <AppContent />
+        </View>
+      </NavigationContainer>
     </AuthProvider>
   );
 }
