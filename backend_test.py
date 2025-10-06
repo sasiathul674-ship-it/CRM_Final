@@ -11,7 +11,7 @@ from datetime import datetime
 import sys
 
 # Configuration
-BASE_URL = "https://cardcrm.preview.emergentagent.com/api"
+BASE_URL = "https://bizcard-crm.preview.emergentagent.com/api"
 TEST_USER_EMAIL = f"test.user.{uuid.uuid4().hex[:8]}@strikecrm.com"
 TEST_USER_PASSWORD = "SecurePass123!"
 TEST_USER_NAME = "John Smith"
