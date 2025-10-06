@@ -1,68 +1,73 @@
-diff --git a/frontend/src/navigation/AppNavigator.tsx b/frontend/src/navigation/AppNavigator.tsx
-index 3ef6814..ba35d2c 100644
---- a/frontend/src/navigation/AppNavigator.tsx
-+++ b/frontend/src/navigation/AppNavigator.tsx
-@@ -26,8 +26,7 @@ function LeadsStackNavigator() {
-   );
- }
- 
--// Main Tab Navigator
--function TabNavigator() {
-+export default function AppNavigator() {
-   return (
-     <Tab.Navigator
-       screenOptions={({ route }) => ({
-@@ -71,11 +70,3 @@ function TabNavigator() {
-     </Tab.Navigator>
-   );
- }
--
--export default function AppNavigator() {
--  return (
--    <NavigationContainer>
--      <TabNavigator />
--    </NavigationContainer>
--  );
--}
 diff --git a/model.patch b/model.patch
-index f1d465d..e69de29 100644
+index ad56535..e69de29 100644
 --- a/model.patch
 +++ b/model.patch
-@@ -1,37 +0,0 @@
--diff --git a/frontend/src/navigation/AuthNavigator.tsx b/frontend/src/navigation/AuthNavigator.tsx
--index 9819aa4..99ac7b2 100644
----- a/frontend/src/navigation/AuthNavigator.tsx
--+++ b/frontend/src/navigation/AuthNavigator.tsx
--@@ -1,6 +1,5 @@
-- import React from 'react';
-- import { createStackNavigator } from '@react-navigation/stack';
---import { NavigationContainer } from '@react-navigation/native';
-- import LoginScreen from '../screens/auth/LoginScreen';
-- import RegisterScreen from '../screens/auth/RegisterScreen';
-- 
--@@ -8,16 +7,14 @@ const Stack = createStackNavigator();
-- 
-- export default function AuthNavigator() {
--   return (
---    <NavigationContainer>
---      <Stack.Navigator
---        initialRouteName="Login"
---        screenOptions={{
---          headerShown: false,
---        }}
---      >
---        <Stack.Screen name="Login" component={LoginScreen} />
---        <Stack.Screen name="Register" component={RegisterScreen} />
---      </Stack.Navigator>
---    </NavigationContainer>
--+    <Stack.Navigator
--+      initialRouteName="Login"
--+      screenOptions={{
--+        headerShown: false,
--+      }}
--+    >
--+      <Stack.Screen name="Login" component={LoginScreen} />
--+      <Stack.Screen name="Register" component={RegisterScreen} />
--+    </Stack.Navigator>
+@@ -1,68 +0,0 @@
+-diff --git a/frontend/src/navigation/AppNavigator.tsx b/frontend/src/navigation/AppNavigator.tsx
+-index 3ef6814..ba35d2c 100644
+---- a/frontend/src/navigation/AppNavigator.tsx
+-+++ b/frontend/src/navigation/AppNavigator.tsx
+-@@ -26,8 +26,7 @@ function LeadsStackNavigator() {
 -   );
 - }
+- 
+--// Main Tab Navigator
+--function TabNavigator() {
+-+export default function AppNavigator() {
+-   return (
+-     <Tab.Navigator
+-       screenOptions={({ route }) => ({
+-@@ -71,11 +70,3 @@ function TabNavigator() {
+-     </Tab.Navigator>
+-   );
+- }
+--
+--export default function AppNavigator() {
+--  return (
+--    <NavigationContainer>
+--      <TabNavigator />
+--    </NavigationContainer>
+--  );
+--}
+-diff --git a/model.patch b/model.patch
+-index f1d465d..e69de29 100644
+---- a/model.patch
+-+++ b/model.patch
+-@@ -1,37 +0,0 @@
+--diff --git a/frontend/src/navigation/AuthNavigator.tsx b/frontend/src/navigation/AuthNavigator.tsx
+--index 9819aa4..99ac7b2 100644
+----- a/frontend/src/navigation/AuthNavigator.tsx
+--+++ b/frontend/src/navigation/AuthNavigator.tsx
+--@@ -1,6 +1,5 @@
+-- import React from 'react';
+-- import { createStackNavigator } from '@react-navigation/stack';
+---import { NavigationContainer } from '@react-navigation/native';
+-- import LoginScreen from '../screens/auth/LoginScreen';
+-- import RegisterScreen from '../screens/auth/RegisterScreen';
+-- 
+--@@ -8,16 +7,14 @@ const Stack = createStackNavigator();
+-- 
+-- export default function AuthNavigator() {
+--   return (
+---    <NavigationContainer>
+---      <Stack.Navigator
+---        initialRouteName="Login"
+---        screenOptions={{
+---          headerShown: false,
+---        }}
+---      >
+---        <Stack.Screen name="Login" component={LoginScreen} />
+---        <Stack.Screen name="Register" component={RegisterScreen} />
+---      </Stack.Navigator>
+---    </NavigationContainer>
+--+    <Stack.Navigator
+--+      initialRouteName="Login"
+--+      screenOptions={{
+--+        headerShown: false,
+--+      }}
+--+    >
+--+      <Stack.Screen name="Login" component={LoginScreen} />
+--+      <Stack.Screen name="Register" component={RegisterScreen} />
+--+    </Stack.Navigator>
+--   );
+-- }
