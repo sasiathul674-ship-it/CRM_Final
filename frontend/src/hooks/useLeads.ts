@@ -54,7 +54,9 @@ export function useLeads() {
         const data = await response.json();
         setLeads(data);
       } else {
-        throw new Error('Failed to fetch leads');
+        const errorData = await response.text();
+        console.error('Failed to fetch leads:', response.status, errorData);
+        throw new Error(`Failed to fetch leads: ${response.status}`);
       }
     } catch (err: any) {
       setError(err.message);
@@ -65,11 +67,18 @@ export function useLeads() {
   };
 
   const createLead = async (leadData: CreateLeadData): Promise<Lead | null> => {
-    if (!token) return null;
+    if (!token) {
+      console.error('No token available for creating lead');
+      setError('Authentication required');
+      return null;
+    }
     
     setError(null);
     
     try {
+      console.log('Creating lead with data:', leadData);
+      console.log('API URL:', `${API_BASE_URL}/api/leads`);
+      
       const response = await fetch(`${API_BASE_URL}/api/leads`, {
         method: 'POST',
         headers: {
@@ -79,17 +88,30 @@ export function useLeads() {
         body: JSON.stringify(leadData),
       });
 
+      console.log('Response status:', response.status);
+      
       if (response.ok) {
         const newLead = await response.json();
+        console.log('Created lead:', newLead);
         setLeads(prev => [...prev, newLead]);
         return newLead;
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to create lead');
+        const errorText = await response.text();
+        console.error('Create lead failed:', response.status, errorText);
+        let errorMessage;
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.detail || 'Failed to create lead';
+        } catch {
+          errorMessage = `Failed to create lead: ${response.status}`;
+        }
+        setError(errorMessage);
+        throw new Error(errorMessage);
       }
     } catch (err: any) {
-      setError(err.message);
       console.error('Error creating lead:', err);
+      const errorMessage = err.message || 'Something went wrong creating the lead';
+      setError(errorMessage);
       return null;
     }
   };
@@ -119,6 +141,8 @@ export function useLeads() {
         );
         return true;
       } else {
+        const errorText = await response.text();
+        console.error('Update stage failed:', response.status, errorText);
         throw new Error('Failed to update lead stage');
       }
     } catch (err: any) {
