@@ -16,28 +16,15 @@ interface Lead {
 
 interface KanbanColumnProps {
   title: string;
+  color: string;
   leads: Lead[];
   onLeadPress: (lead: Lead) => void;
-  backgroundColor?: string;
 }
 
-const getStageColor = (stage: string) => {
-  switch (stage) {
-    case 'New Leads': return '#EFF6FF';
-    case 'Contacted': return '#FEF3C7';
-    case 'Follow-up': return '#FECACA';
-    case 'Negotiation': return '#D1FAE5';
-    case 'Closed': return '#E0E7FF';
-    default: return '#F9FAFB';
-  }
-};
-
-export default function KanbanColumn({ title, leads, onLeadPress }: KanbanColumnProps) {
-  const backgroundColor = getStageColor(title);
-  
+export default function KanbanColumn({ title, color, leads, onLeadPress }: KanbanColumnProps) {
   return (
-    <View style={[styles.column, { backgroundColor }]}>
-      <View style={styles.header}>
+    <View style={styles.container}>
+      <View style={[styles.header, { backgroundColor: color }]}>
         <Text style={styles.title}>{title}</Text>
         <View style={styles.badge}>
           <Text style={styles.count}>{leads.length}</Text>
@@ -68,39 +55,45 @@ export default function KanbanColumn({ title, leads, onLeadPress }: KanbanColumn
 }
 
 const styles = StyleSheet.create({
-  column: {
-    width: 180,
-    marginRight: 12,
+  container: {
+    width: 280,
+    marginRight: 16,
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    padding: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
     maxHeight: '100%',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    marginBottom: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
   },
   title: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: '#FFFFFF',
     flex: 1,
   },
   badge: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 12,
     paddingHorizontal: 8,
-    paddingVertical: 2,
-    minWidth: 24,
+    paddingVertical: 4,
+    minWidth: 28,
     alignItems: 'center',
   },
   count: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#4F46E5',
+    color: '#FFFFFF',
   },
   scrollView: {
     flex: 1,
@@ -110,10 +103,11 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 24,
+    paddingVertical: 32,
+    paddingHorizontal: 16,
   },
   emptyText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#9CA3AF',
     fontStyle: 'italic',
   },

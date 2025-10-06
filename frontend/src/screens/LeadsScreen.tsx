@@ -1,35 +1,64 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  TextInput,
+  RefreshControl,
+  Alert,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLeads } from '../hooks/useLeads';
-import KanbanColumn from '../components/KanbanColumn';
+import KanbanBoard from '../components/KanbanBoard';
 import LoadingScreen from '../components/LoadingScreen';
 
-const STAGES = ['New Leads', 'Contacted', 'Follow-up', 'Negotiation', 'Closed'];
-
 export default function LeadsScreen({ navigation }: any) {
-  const { leads, loading, error, updateLeadStage } = useLeads();
+  const { leads, loading, error, fetchLeads } = useLeads();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedPriority, setSelectedPriority] = useState<string>('all');
+  const [refreshing, setRefreshing] = useState(false);
 
-  if (loading && leads.length === 0) {
-    return <LoadingScreen />;
-  }
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchLeads();
+    setRefreshing(false);
+  }, [fetchLeads]);
+
+  const filteredLeads = leads.filter(lead => {
+    const matchesSearch = lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (lead.company?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+                         (lead.phone?.includes(searchQuery) || false);
+    
+    const matchesPriority = selectedPriority === 'all' || lead.priority === selectedPriority;
+    
+    return matchesSearch && matchesPriority;
+  });
+
+  const handleAddLead = () => {
+    navigation.navigate('AddLead');
+  };
 
   const handleLeadPress = (lead: any) => {
     navigation.navigate('LeadDetail', { lead });
   };
 
-  const getLeadsByStage = (stage: string) => {
-    return leads.filter(lead => lead.stage === stage);
-  };
+  if (loading && leads.length === 0) {
+    return <LoadingScreen />;
+  }
 
-  if (error) {
+  if (error && leads.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
-          <Ionicons name="warning-outline" size={48} color="#EF4444" />
-          <Text style={styles.errorText}>Failed to load leads</Text>
-          <Text style={styles.errorDetails}>{error}</Text>
+          <Ionicons name="warning-outline" size={64} color="#EF4444" />
+          <Text style={styles.errorTitle}>Unable to Load Leads</Text>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchLeads}>
+            <Text style={styles.retryButtonText}>Try Again</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -38,86 +67,205 @@ export default function LeadsScreen({ navigation }: any) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Leads Pipeline</Text>
-        <Text style={styles.subtitle}>{leads.length} total leads</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Leads Pipeline</Text>
+          <Text style={styles.subtitle}>{filteredLeads.length} of {leads.length} leads</Text>
+        </View>
       </View>
 
-      {leads.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Ionicons name="people-outline" size={64} color="#9CA3AF" />
-          <Text style={styles.emptyTitle}>No leads yet</Text>
-          <Text style={styles.emptyText}>Add your first lead to get started with your CRM</Text>
-          <TouchableOpacity 
-            style={styles.addFirstButton}
-            onPress={() => navigation.navigate('AddLead')}
-          >
-            <Text style={styles.addFirstButtonText}>Add First Lead</Text>
-          </TouchableOpacity>
+      {/* Search and Filter Bar */}
+      <View style={styles.filterContainer}>
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={20} color="#6B7280" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search leads..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoCapitalize="none"
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
+              <Ionicons name="close-circle" size={20} color="#6B7280" />
+            </TouchableOpacity>
+          )}
         </View>
-      ) : (
+        
         <ScrollView 
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.kanbanContainer}
-          contentContainerStyle={styles.kanbanContent}
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          style={styles.filterButtons}
+          contentContainerStyle={styles.filterButtonsContent}
         >
-          {STAGES.map((stage) => (
-            <KanbanColumn
-              key={stage}
-              title={stage}
-              leads={getLeadsByStage(stage)}
-              onLeadPress={handleLeadPress}
-            />
+          {['all', 'high', 'medium', 'low'].map((priority) => (
+            <TouchableOpacity
+              key={priority}
+              style={[
+                styles.filterButton,
+                selectedPriority === priority && styles.activeFilterButton,
+                priority !== 'all' && { 
+                  backgroundColor: getPriorityColor(priority),
+                  borderColor: getPriorityColor(priority)
+                }
+              ]}
+              onPress={() => setSelectedPriority(priority)}
+            >
+              <Text style={[
+                styles.filterButtonText,
+                selectedPriority === priority && styles.activeFilterButtonText,
+                priority !== 'all' && selectedPriority === priority && { color: '#FFFFFF' }
+              ]}>
+                {priority === 'all' ? 'All' : priority.charAt(0).toUpperCase() + priority.slice(1)}
+              </Text>
+            </TouchableOpacity>
           ))}
         </ScrollView>
-      )}
+      </View>
 
-      <TouchableOpacity 
-        style={styles.fab}
-        onPress={() => navigation.navigate('AddLead')}
-      >
-        <Ionicons name="add" size={24} color="#FFFFFF" />
+      {/* Kanban Board */}
+      <View style={styles.boardContainer}>
+        {filteredLeads.length === 0 ? (
+          <ScrollView 
+            contentContainerStyle={styles.emptyStateContainer}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          >
+            <Ionicons name="people-outline" size={80} color="#D1D5DB" />
+            <Text style={styles.emptyTitle}>
+              {searchQuery || selectedPriority !== 'all' ? 'No matching leads' : 'No leads yet'}
+            </Text>
+            <Text style={styles.emptyText}>
+              {searchQuery || selectedPriority !== 'all' 
+                ? 'Try adjusting your search or filters'
+                : 'Add your first lead to start building your pipeline'
+              }
+            </Text>
+            {!searchQuery && selectedPriority === 'all' && (
+              <TouchableOpacity style={styles.addFirstButton} onPress={handleAddLead}>
+                <Text style={styles.addFirstButtonText}>Add First Lead</Text>
+              </TouchableOpacity>
+            )}
+          </ScrollView>
+        ) : (
+          <KanbanBoard 
+            leads={filteredLeads}
+            onLeadPress={handleLeadPress}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          />
+        )}
+      </View>
+
+      {/* Floating Action Button */}
+      <TouchableOpacity style={styles.fab} onPress={handleAddLead}>
+        <Ionicons name="add" size={28} color="#FFFFFF" />
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
+const getPriorityColor = (priority: string) => {
+  switch (priority) {
+    case 'high': return '#EF4444';
+    case 'medium': return '#F59E0B';
+    case 'low': return '#10B981';
+    default: return '#6B7280';
+  }
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F8FAFC',
   },
   header: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 8,
     paddingBottom: 16,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: '#E2E8F0',
+  },
+  titleContainer: {
+    flex: 1,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 4,
+    color: '#1E293B',
+    marginBottom: 2,
   },
   subtitle: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#64748B',
   },
-  kanbanContainer: {
-    flex: 1,
-    paddingVertical: 16,
+  filterContainer: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
   },
-  kanbanContent: {
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
     paddingHorizontal: 16,
-    paddingRight: 32,
+    marginBottom: 12,
+    height: 48,
   },
-  emptyState: {
+  searchIcon: {
+    marginRight: 12,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#1E293B',
+  },
+  clearButton: {
+    padding: 4,
+  },
+  filterButtons: {
+    maxHeight: 40,
+  },
+  filterButtonsContent: {
+    paddingRight: 20,
+  },
+  filterButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#FFFFFF',
+    marginRight: 8,
+  },
+  activeFilterButton: {
+    backgroundColor: '#4F46E5',
+    borderColor: '#4F46E5',
+  },
+  filterButtonText: {
+    fontSize: 14,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  activeFilterButtonText: {
+    color: '#FFFFFF',
+  },
+  boardContainer: {
+    flex: 1,
+  },
+  emptyStateContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 48,
+    paddingHorizontal: 40,
   },
   emptyTitle: {
     fontSize: 20,
@@ -148,34 +296,46 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 48,
+    paddingHorizontal: 40,
   },
-  errorText: {
-    fontSize: 18,
+  errorTitle: {
+    fontSize: 20,
     fontWeight: '600',
     color: '#374151',
     marginTop: 16,
     marginBottom: 8,
   },
-  errorDetails: {
-    fontSize: 14,
+  errorText: {
+    fontSize: 16,
     color: '#6B7280',
     textAlign: 'center',
+    marginBottom: 24,
+  },
+  retryButton: {
+    backgroundColor: '#4F46E5',
+    borderRadius: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   fab: {
     position: 'absolute',
-    right: 24,
-    bottom: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    right: 20,
+    bottom: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: '#4F46E5',
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 8,
-    shadowColor: '#000',
+    shadowColor: '#4F46E5',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
   },
 });

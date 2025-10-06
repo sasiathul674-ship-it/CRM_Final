@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -31,7 +31,7 @@ const getPriorityColor = (priority: string) => {
 };
 
 const formatLastInteraction = (dateString?: string) => {
-  if (!dateString) return 'No interactions yet';
+  if (!dateString) return 'No contact yet';
   try {
     return formatDistanceToNow(new Date(dateString), { addSuffix: true });
   } catch {
@@ -40,6 +40,24 @@ const formatLastInteraction = (dateString?: string) => {
 };
 
 export default function LeadCard({ lead, onPress, isDragging = false }: LeadCardProps) {
+  const handleCall = (e: any) => {
+    e.stopPropagation();
+    if (lead.phone) {
+      Linking.openURL(`tel:${lead.phone}`);
+    } else {
+      Alert.alert('No Phone Number', 'This lead does not have a phone number.');
+    }
+  };
+
+  const handleEmail = (e: any) => {
+    e.stopPropagation();
+    if (lead.email) {
+      Linking.openURL(`mailto:${lead.email}`);
+    } else {
+      Alert.alert('No Email', 'This lead does not have an email address.');
+    }
+  };
+
   return (
     <TouchableOpacity
       style={[styles.card, isDragging && styles.dragging]}
@@ -48,28 +66,39 @@ export default function LeadCard({ lead, onPress, isDragging = false }: LeadCard
     >
       <View style={styles.header}>
         <View style={styles.nameSection}>
-          <Text style={styles.name}>{lead.name}</Text>
+          <Text style={styles.name} numberOfLines={1}>{lead.name}</Text>
           <View style={[styles.priorityDot, { backgroundColor: getPriorityColor(lead.priority) }]} />
         </View>
-        {lead.phone && (
-          <TouchableOpacity style={styles.phoneButton}>
-            <Ionicons name="call" size={16} color="#4F46E5" />
-          </TouchableOpacity>
-        )}
       </View>
       
       {lead.company && (
-        <Text style={styles.company}>{lead.company}</Text>
+        <Text style={styles.company} numberOfLines={1}>{lead.company}</Text>
       )}
       
       {lead.phone && (
-        <Text style={styles.phone}>{lead.phone}</Text>
+        <Text style={styles.phone} numberOfLines={1}>{lead.phone}</Text>
       )}
       
       <View style={styles.footer}>
-        <Text style={styles.lastInteraction}>
+        <Text style={styles.lastInteraction} numberOfLines={1}>
           {formatLastInteraction(lead.last_interaction)}
         </Text>
+      </View>
+      
+      <View style={styles.actions}>
+        {lead.phone && (
+          <TouchableOpacity style={styles.actionButton} onPress={handleCall}>
+            <Ionicons name="call" size={16} color="#4F46E5" />
+          </TouchableOpacity>
+        )}
+        {lead.email && (
+          <TouchableOpacity style={styles.actionButton} onPress={handleEmail}>
+            <Ionicons name="mail" size={16} color="#4F46E5" />
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity style={styles.actionButton} onPress={onPress}>
+          <Ionicons name="create-outline" size={16} color="#4F46E5" />
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
@@ -81,15 +110,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
-    marginHorizontal: 4,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    marginHorizontal: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   dragging: {
     opacity: 0.8,
@@ -111,7 +134,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1F2937',
+    color: '#1E293B',
     flex: 1,
   },
   priorityDot: {
@@ -120,27 +143,38 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginLeft: 8,
   },
-  phoneButton: {
-    padding: 4,
-  },
   company: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#64748B',
     marginBottom: 4,
   },
   phone: {
     fontSize: 13,
-    color: '#9CA3AF',
+    color: '#94A3B8',
     marginBottom: 8,
   },
   footer: {
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
+    borderTopColor: '#F1F5F9',
     paddingTop: 8,
+    marginBottom: 8,
   },
   lastInteraction: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: '#94A3B8',
     fontStyle: 'italic',
+  },
+  actions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
+  },
+  actionButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
