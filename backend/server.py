@@ -40,16 +40,10 @@ api_router = APIRouter(prefix="/api")
 
 # Helper functions
 def verify_password(plain_password, hashed_password):
-    # Pre-hash with SHA-256 to match the hashing process
-    digest = hashlib.sha256(plain_password.encode('utf-8')).digest()
-    encoded = base64.b64encode(digest).decode('ascii')
-    return pwd_context.verify(encoded, hashed_password)
+    return pwd_context.verify(plain_password, hashed_password)
 
 def get_password_hash(password):
-    # Pre-hash with SHA-256 to handle long passwords and ensure bcrypt compatibility
-    digest = hashlib.sha256(password.encode('utf-8')).digest()
-    encoded = base64.b64encode(digest).decode('ascii')
-    return pwd_context.hash(encoded)
+    return pwd_context.hash(password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
