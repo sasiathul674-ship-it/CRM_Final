@@ -9,15 +9,16 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Modal,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useLeads } from '../hooks/useLeads';
+import { useAuth } from '../contexts/AuthContext';
+import { apiService } from '../services/api';
 
-const STAGES = ['New Leads', 'Contacted', 'Follow-up', 'Negotiation', 'Closed'];
-const PRIORITIES = ['low', 'medium', 'high'];
 const LEAD_SOURCES = ['Website', 'Referral', 'Cold Call', 'Social Media', 'Email Campaign', 'Other'];
+const PRIORITIES = ['low', 'medium', 'high'];
 
 const getPriorityColor = (priority: string) => {
   switch (priority) {
@@ -28,32 +29,27 @@ const getPriorityColor = (priority: string) => {
   }
 };
 
-const getPriorityLabel = (priority: string) => {
-  return priority.charAt(0).toUpperCase() + priority.slice(1);
-};
-
 export default function AddLeadScreen({ navigation }: any) {
   const [name, setName] = useState('');
   const [company, setCompany] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
-  const [stage, setStage] = useState('New Leads');
-  const [priority, setPriority] = useState('medium');
   const [leadSource, setLeadSource] = useState('Website');
+  const [priority, setPriority] = useState('medium');
+  const [dealValue, setDealValue] = useState('');
   const [notes, setNotes] = useState('');
+  const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
-
-  const { createLead, error } = useLeads();
+  
+  const { token } = useAuth();
 
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
     
     if (!name.trim()) {
       newErrors.name = 'Lead name is required';
-    } else if (name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
     }
     
     if (!phone.trim() && !email.trim()) {
@@ -64,7 +60,7 @@ export default function AddLeadScreen({ navigation }: any) {
       newErrors.phone = 'Please enter a valid phone number';
     }
     
-    if (email.trim() && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email.trim())) {
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       newErrors.email = 'Please enter a valid email address';
     }
     
@@ -73,12 +69,10 @@ export default function AddLeadScreen({ navigation }: any) {
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) {
-      return;
-    }
-
+    if (!validateForm()) return;
+    
     setIsSubmitting(true);
-
+    
     try {
       const leadData = {
         name: name.trim(),
@@ -86,32 +80,45 @@ export default function AddLeadScreen({ navigation }: any) {
         phone: phone.trim() || undefined,
         email: email.trim() || undefined,
         address: address.trim() || undefined,
-        stage,
+        stage: 'New Leads',
         priority,
-        notes: notes.trim() ? `Source: ${leadSource}\\n\\n${notes.trim()}` : `Source: ${leadSource}`,
+        notes: notes.trim() ? `Source: ${leadSource}\n\nDeal Value: $${dealValue || 'Not specified'}\n\n${notes.trim()}` : `Source: ${leadSource}\n\nDeal Value: $${dealValue || 'Not specified'}`,
       };
 
-      console.log('Submitting lead data:', leadData);
-      const newLead = await createLead(leadData);
+      const newLead = await apiService.createLead(token!, leadData);
       
       if (newLead) {
-        Alert.alert('Lead Added Successfully!', 'Your new lead has been added to the pipeline.', [
-          { 
-            text: 'View Pipeline', 
-            onPress: () => {
-              navigation.goBack();
-              // Navigate to Leads tab
-              navigation.navigate('Leads', { screen: 'LeadsList' });
-            }
-          },
-        ]);
-      } else {
-        const errorMessage = error || 'Unable to create lead. Please check your connection and try again.';
-        Alert.alert('Failed to Add Lead', errorMessage);
+        Alert.alert(
+          '✅ Lead Added Successfully!',
+          `${newLead.name} has been added to your pipeline.`,
+          [
+            {
+              text: 'Add Another',
+              onPress: () => {
+                // Reset form
+                setName('');
+                setCompany('');
+                setPhone('');
+                setEmail('');
+                setAddress('');
+                setDealValue('');
+                setNotes('');
+                setPriority('medium');
+                setLeadSource('Website');
+                setShowMoreDetails(false);
+                setErrors({});
+              }
+            },
+            {
+              text: 'View Pipeline',
+              style: 'default',
+              onPress: () => navigation.goBack()
+            },
+          ]
+        );
       }
-    } catch (err: any) {
-      console.error('Lead creation error:', err);
-      Alert.alert('Error', 'Something went wrong. Please try again.');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to create lead. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -124,188 +131,240 @@ export default function AddLeadScreen({ navigation }: any) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
-        <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color="#374151" />
-          </TouchableOpacity>
-          <Text style={styles.title}>Add New Lead</Text>
-          <View style={styles.placeholder} />
-        </View>
+    <Modal animationType="slide" presentationStyle="pageSheet">
+      <SafeAreaView style={styles.container}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardView}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="close" size={24} color="#374151" />
+            </TouchableOpacity>
+            <Text style={styles.title}>Add New Lead</Text>
+            <View style={styles.placeholder} />
+          </View>
 
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Contact Information</Text>
-            
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Lead Name *</Text>
-              <TextInput
-                style={[styles.input, errors.name && styles.inputError]}
-                value={name}
-                onChangeText={(text) => {
-                  setName(text);
-                  clearError('name');
-                }}
-                placeholder="Enter lead's full name"
-                autoCapitalize="words"
-                editable={!isSubmitting}
-              />
-              {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
-            </View>
+          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            {/* Required Fields */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Basic Information</Text>
+              
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Lead Name *</Text>
+                <TextInput
+                  style={[styles.input, errors.name && styles.inputError]}
+                  value={name}
+                  onChangeText={(text) => {
+                    setName(text);
+                    clearError('name');
+                  }}
+                  placeholder="Enter lead's full name"
+                  autoCapitalize="words"
+                  autoFocus
+                  editable={!isSubmitting}
+                />
+                {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
+              </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Company</Text>
-              <TextInput
-                style={styles.input}
-                value={company}
-                onChangeText={setCompany}
-                placeholder="Company or organization name"
-                autoCapitalize="words"
-                editable={!isSubmitting}
-              />
-            </View>
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Company *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={company}
+                  onChangeText={setCompany}
+                  placeholder="Company or organization name"
+                  autoCapitalize="words"
+                  editable={!isSubmitting}
+                />
+              </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Phone Number {!email.trim() && '*'}</Text>
-              <TextInput
-                style={[styles.input, errors.phone && styles.inputError]}
-                value={phone}
-                onChangeText={(text) => {
-                  setPhone(text);
-                  clearError('phone');
-                  clearError('contact');
-                }}
-                placeholder="+1 (555) 123-4567"
-                keyboardType="phone-pad"
-                editable={!isSubmitting}
-              />
-              {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email Address {!phone.trim() && '*'}</Text>
-              <TextInput
-                style={[styles.input, errors.email && styles.inputError]}
-                value={email}
-                onChangeText={(text) => {
-                  setEmail(text);
-                  clearError('email');
-                  clearError('contact');
-                }}
-                placeholder="name@company.com"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                editable={!isSubmitting}
-              />
-              {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+              <View style={styles.row}>
+                <View style={[styles.inputContainer, styles.halfWidth]}>
+                  <Text style={styles.label}>Phone {!email.trim() && '*'}</Text>
+                  <TextInput
+                    style={[styles.input, errors.phone && styles.inputError]}
+                    value={phone}
+                    onChangeText={(text) => {
+                      setPhone(text);
+                      clearError('phone');
+                      clearError('contact');
+                    }}
+                    placeholder="+1 (555) 123-4567"
+                    keyboardType="phone-pad"
+                    editable={!isSubmitting}
+                  />
+                  {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
+                </View>
+                
+                <View style={[styles.inputContainer, styles.halfWidth]}>
+                  <Text style={styles.label}>Email {!phone.trim() && '*'}</Text>
+                  <TextInput
+                    style={[styles.input, errors.email && styles.inputError]}
+                    value={email}
+                    onChangeText={(text) => {
+                      setEmail(text);
+                      clearError('email');
+                      clearError('contact');
+                    }}
+                    placeholder="name@company.com"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    editable={!isSubmitting}
+                  />
+                  {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+                </View>
+              </View>
+              
               {errors.contact && <Text style={styles.errorText}>{errors.contact}</Text>}
             </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Address</Text>
-              <TextInput
-                style={[styles.input, styles.multilineInput]}
-                value={address}
-                onChangeText={setAddress}
-                placeholder="Business address"
-                multiline
-                numberOfLines={2}
+            {/* More Details Toggle */}
+            <TouchableOpacity 
+              style={styles.toggleSection}
+              onPress={() => setShowMoreDetails(!showMoreDetails)}
+            >
+              <Text style={styles.toggleText}>More Details</Text>
+              <Ionicons 
+                name={showMoreDetails ? "chevron-up" : "chevron-down"} 
+                size={20} 
+                color="#4F46E5" 
               />
-            </View>
-          </View>
+            </TouchableOpacity>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Lead Details</Text>
-            
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Stage</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View style={styles.optionRow}>
-                  {STAGES.map((stageOption) => (
-                    <TouchableOpacity
-                      key={stageOption}
-                      style={[
-                        styles.optionButton,
-                        stage === stageOption && styles.optionButtonSelected
-                      ]}
-                      onPress={() => setStage(stageOption)}
-                    >
-                      <Text
-                        style={[
-                          styles.optionText,
-                          stage === stageOption && styles.optionTextSelected
-                        ]}
-                      >
-                        {stageOption}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+            {/* Optional Fields */}
+            {showMoreDetails && (
+              <View style={styles.section}>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Lead Source</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <View style={styles.optionRow}>
+                      {LEAD_SOURCES.map((source) => (
+                        <TouchableOpacity
+                          key={source}
+                          style={[
+                            styles.optionButton,
+                            leadSource === source && styles.optionButtonSelected
+                          ]}
+                          onPress={() => setLeadSource(source)}
+                        >
+                          <Text
+                            style={[
+                              styles.optionText,
+                              leadSource === source && styles.optionTextSelected
+                            ]}
+                          >
+                            {source}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </ScrollView>
                 </View>
-              </ScrollView>
-            </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Priority</Text>
-              <View style={styles.optionRow}>
-                {PRIORITIES.map((priorityOption) => (
-                  <TouchableOpacity
-                    key={priorityOption}
-                    style={[
-                      styles.priorityButton,
-                      priority === priorityOption && {
-                        backgroundColor: getPriorityColor(priorityOption),
-                        borderColor: getPriorityColor(priorityOption),
-                      }
-                    ]}
-                    onPress={() => setPriority(priorityOption)}
-                  >
-                    <Text
-                      style={[
-                        styles.priorityText,
-                        priority === priorityOption && styles.priorityTextSelected
-                      ]}
-                    >
-                      {getPriorityLabel(priorityOption)}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Priority Level</Text>
+                  <View style={styles.priorityRow}>
+                    {PRIORITIES.map((priorityOption) => (
+                      <TouchableOpacity
+                        key={priorityOption}
+                        style={[
+                          styles.priorityButton,
+                          priority === priorityOption && {
+                            backgroundColor: getPriorityColor(priorityOption),
+                            borderColor: getPriorityColor(priorityOption),
+                          }
+                        ]}
+                        onPress={() => setPriority(priorityOption)}
+                      >
+                        <View style={[
+                          styles.priorityDot, 
+                          { backgroundColor: getPriorityColor(priorityOption) }
+                        ]} />
+                        <Text
+                          style={[
+                            styles.priorityText,
+                            priority === priorityOption && styles.priorityTextSelected
+                          ]}
+                        >
+                          {priorityOption.charAt(0).toUpperCase() + priorityOption.slice(1)}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                <View style={styles.row}>
+                  <View style={[styles.inputContainer, styles.halfWidth]}>
+                    <Text style={styles.label}>Expected Deal Value</Text>
+                    <View style={styles.currencyInput}>
+                      <Text style={styles.currencySymbol}>$</Text>
+                      <TextInput
+                        style={styles.currencyField}
+                        value={dealValue}
+                        onChangeText={setDealValue}
+                        placeholder="5,000"
+                        keyboardType="numeric"
+                        editable={!isSubmitting}
+                      />
+                    </View>
+                  </View>
+                  
+                  <View style={[styles.inputContainer, styles.halfWidth]}>
+                    <Text style={styles.label}>Address</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={address}
+                      onChangeText={setAddress}
+                      placeholder="City, State"
+                      editable={!isSubmitting}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Notes</Text>
+                  <TextInput
+                    style={[styles.input, styles.multilineInput]}
+                    value={notes}
+                    onChangeText={setNotes}
+                    placeholder="Additional notes about this lead..."
+                    multiline
+                    numberOfLines={3}
+                    editable={!isSubmitting}
+                  />
+                </View>
               </View>
-            </View>
+            )}
+          </ScrollView>
 
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Notes</Text>
-              <TextInput
-                style={[styles.input, styles.multilineInput]}
-                value={notes}
-                onChangeText={setNotes}
-                placeholder="Additional notes about this lead..."
-                multiline
-                numberOfLines={3}
-              />
-            </View>
+          {/* Footer */}
+          <View style={styles.footer}>
+            <TouchableOpacity
+              style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+              onPress={handleSubmit}
+              disabled={isSubmitting || !name.trim() || (!phone.trim() && !email.trim())}
+            >
+              {isSubmitting ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                  <Text style={styles.submitButtonText}>Creating Lead...</Text>
+                </View>
+              ) : (
+                <View style={styles.buttonContent}>
+                  <Text style={styles.submitButtonText}>Create Lead</Text>
+                  <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+                </View>
+              )}
+            </TouchableOpacity>
           </View>
-        </ScrollView>
-
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
-            onPress={handleSubmit}
-            disabled={isSubmitting}
-          >
-            <Text style={styles.submitButtonText}>
-              {isSubmitting ? 'Creating Lead...' : 'Create Lead'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </Modal>
   );
 }
 
@@ -342,7 +401,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   section: {
-    marginVertical: 24,
+    marginVertical: 20,
   },
   sectionTitle: {
     fontSize: 18,
@@ -369,13 +428,44 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     color: '#1F2937',
   },
+  inputError: {
+    borderColor: '#EF4444',
+  },
+  errorText: {
+    fontSize: 12,
+    color: '#EF4444',
+    marginTop: 4,
+    fontWeight: '500',
+  },
   multilineInput: {
     minHeight: 80,
     textAlignVertical: 'top',
   },
+  row: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  halfWidth: {
+    flex: 1,
+  },
+  toggleSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    marginHorizontal: -8,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 8,
+    marginVertical: 8,
+  },
+  toggleText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#4F46E5',
+  },
   optionRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 8,
   },
   optionButton: {
@@ -385,7 +475,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#D1D5DB',
     backgroundColor: '#FFFFFF',
-    marginRight: 8,
   },
   optionButtonSelected: {
     backgroundColor: '#4F46E5',
@@ -399,16 +488,26 @@ const styles = StyleSheet.create({
   optionTextSelected: {
     color: '#FFFFFF',
   },
+  priorityRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
   priorityButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#D1D5DB',
     backgroundColor: '#FFFFFF',
-    marginRight: 12,
-    flex: 1,
-    alignItems: 'center',
+  },
+  priorityDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
   },
   priorityText: {
     fontSize: 14,
@@ -418,6 +517,27 @@ const styles = StyleSheet.create({
   priorityTextSelected: {
     color: '#FFFFFF',
     fontWeight: '600',
+  },
+  currencyInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    backgroundColor: '#FFFFFF',
+  },
+  currencySymbol: {
+    fontSize: 16,
+    color: '#6B7280',
+    fontWeight: '500',
+    marginRight: 8,
+  },
+  currencyField: {
+    flex: 1,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: '#1F2937',
   },
   footer: {
     padding: 24,
@@ -429,23 +549,28 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
+    shadowColor: '#4F46E5',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   submitButtonDisabled: {
     opacity: 0.6,
+    shadowOpacity: 0.1,
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   submitButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+    marginRight: 8,
   },
-  inputError: {
-    borderColor: '#EF4444',
-    borderWidth: 2,
-  },
-  errorText: {
-    color: '#EF4444',
-    fontSize: 12,
-    marginTop: 4,
-    fontWeight: '500',
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
