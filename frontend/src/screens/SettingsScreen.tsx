@@ -57,7 +57,10 @@ export default function SettingsScreen() {
             <Ionicons name="chevron-forward" size={20} color="#D1D5DB" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => Alert.alert('Export Data', 'Data export functionality will be available soon. You can export leads, tasks, and activities in CSV format.')}
+          >
             <Ionicons name="download-outline" size={20} color="#6B7280" />
             <Text style={styles.menuText}>Export Data</Text>
             <Ionicons name="chevron-forward" size={20} color="#D1D5DB" />
