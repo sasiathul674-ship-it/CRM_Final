@@ -23,6 +23,7 @@ export default function LeadsScreen({ navigation }: any) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPriority, setSelectedPriority] = useState<string>('all');
   const [refreshing, setRefreshing] = useState(false);
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
