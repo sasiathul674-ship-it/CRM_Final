@@ -595,8 +595,11 @@ async def update_task(task_id: str, task_update: TaskCreate, current_user: dict 
     updated_task = await db.tasks.find_one({"_id": task_id})
     return Task(**updated_task, id=updated_task["_id"])
 
+class TaskStatusUpdate(BaseModel):
+    status: str
+
 @api_router.patch("/tasks/{task_id}/status")
-async def update_task_status(task_id: str, status: str, current_user: dict = Depends(get_current_user)):
+async def update_task_status(task_id: str, status_update: TaskStatusUpdate, current_user: dict = Depends(get_current_user)):
     valid_statuses = ["pending", "completed", "cancelled"]
     if status not in valid_statuses:
         raise HTTPException(status_code=400, detail="Invalid status")
