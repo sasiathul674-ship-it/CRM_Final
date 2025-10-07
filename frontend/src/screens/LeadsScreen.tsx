@@ -90,7 +90,30 @@ export default function LeadsScreen({ navigation }: any) {
             </TouchableOpacity>
           )}
         </View>
+
+        {/* Date Filter Row */}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          style={styles.dateFilterButtons}
+          contentContainerStyle={styles.filterButtonsContent}
+        >
+          {['Today', 'This Week', 'This Month', 'All Time'].map((dateFilter) => (
+            <TouchableOpacity
+              key={dateFilter}
+              style={[
+                styles.filterButton,
+                styles.dateFilterButton
+              ]}
+              onPress={() => console.log(`Filter by: ${dateFilter}`)}
+            >
+              <Ionicons name="calendar-outline" size={14} color="#6B7280" />
+              <Text style={styles.dateFilterButtonText}>{dateFilter}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
         
+        {/* Priority Filter Row */}
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false} 
