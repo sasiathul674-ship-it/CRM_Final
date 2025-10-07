@@ -11,53 +11,48 @@ export default function SettingsScreen({ navigation }: any) {
   const handleLogout = () => {
     console.log('🚪 Logout button pressed!'); // Debug log
     
-    // First show toast asking for confirmation
-    Toast.show({
-      type: 'info',
-      text1: '🚪 Logout Confirmation',
-      text2: 'Tap here to confirm logout',
-      position: 'top',
-      visibilityTime: 0, // Stay visible until dismissed
-      autoHide: false,
-      onPress: () => {
-        // When user taps the toast, show Alert for final confirmation
-        Toast.hide();
-        Alert.alert(
-          '🚪 Confirm Logout',
-          'Are you sure you want to logout from Strike CRM?',
-          [
-            {
-              text: 'Cancel',
-              style: 'cancel',
-              onPress: () => {
-                Toast.show({
-                  type: 'info',
-                  text1: '↩️ Logout Cancelled',
-                  text2: 'You remain logged in',
-                  position: 'bottom',
-                  visibilityTime: 2000,
-                });
-              }
-            },
-            {
-              text: 'Logout',
-              style: 'destructive',
-              onPress: () => {
-                console.log('🚪 User confirmed logout');
-                logout();
-                Toast.show({
-                  type: 'success',
-                  text1: '✅ Logged Out Successfully',
-                  text2: 'You have been logged out of Strike CRM',
-                  position: 'top',
-                  visibilityTime: 3000,
-                });
-              }
-            }
-          ]
-        );
-      }
-    });
+    // Show direct Alert confirmation - much clearer UX
+    Alert.alert(
+      '🚪 Confirm Logout',
+      'Are you sure you want to logout from Strike CRM?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+          onPress: () => {
+            console.log('🚪 Logout cancelled by user');
+            Toast.show({
+              type: 'info',
+              text1: '↩️ Logout Cancelled',
+              text2: 'You remain logged in',
+              position: 'bottom',
+              visibilityTime: 2000,
+            });
+          }
+        },
+        {
+          text: 'Yes, Logout',
+          style: 'destructive',
+          onPress: () => {
+            console.log('🚪 User confirmed logout - executing logout...');
+            
+            // Show logout success toast before actually logging out
+            Toast.show({
+              type: 'success',
+              text1: '✅ Logging Out...',
+              text2: 'Please wait...',
+              position: 'top',
+              visibilityTime: 1500,
+            });
+            
+            // Execute logout after a brief delay to show the toast
+            setTimeout(() => {
+              logout();
+            }, 500);
+          }
+        }
+      ]
+    );
   };
 
   return (
