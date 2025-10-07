@@ -49,11 +49,14 @@ export default function DashboardScreen({ navigation }: any) {
     }
   }, [token, selectedDateFilter]);
 
-  // Refresh data when screen comes into focus
+  // Refresh data when screen comes into focus (important for task updates from lead screens)
   useFocusEffect(
     useCallback(() => {
       if (token) {
+        console.log('📊 Dashboard focused - refreshing stats and tasks...');
         fetchDashboardStats();
+        // Force TaskManager refresh when screen is focused
+        setTaskRefreshKey(prev => prev + 1);
       }
     }, [token])
   );
