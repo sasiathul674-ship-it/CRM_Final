@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
+import Toast from 'react-native-toast-message';
 
 export default function RegisterScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
