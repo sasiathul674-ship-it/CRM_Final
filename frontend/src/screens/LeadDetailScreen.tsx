@@ -413,7 +413,7 @@ export default function LeadDetailScreen({ route, navigation }: any) {
 
   const renderTabs = () => (
     <View style={styles.tabContainer}>
-      {['overview', 'timeline', 'notes'].map((tab) => (
+      {['overview', 'tasks', 'timeline'].map((tab) => (
         <TouchableOpacity
           key={tab}
           style={[styles.tab, activeTab === tab && styles.activeTab]}
