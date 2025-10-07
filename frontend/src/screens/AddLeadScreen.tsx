@@ -90,34 +90,15 @@ export default function AddLeadScreen({ navigation }: any) {
       const newLead = await apiService.createLead(token!, leadData);
       
       if (newLead) {
-        Alert.alert(
-          '✅ Lead Added Successfully!',
-          `${newLead.name} has been added to your pipeline.`,
-          [
-            {
-              text: 'Add Another',
-              onPress: () => {
-                // Reset form
-                setName('');
-                setCompany('');
-                setPhone('');
-                setEmail('');
-                setAddress('');
-                setDealValue('');
-                setNotes('');
-                setPriority('medium');
-                setLeadSource('Website');
-                setShowMoreDetails(false);
-                setErrors({});
-              }
-            },
-            {
-              text: 'View Pipeline',
-              style: 'default',
-              onPress: () => navigation.goBack()
-            },
-          ]
-        );
+        Toast.show({
+          type: 'success',
+          text1: '✅ Lead Added Successfully!',
+          text2: `${newLead.name} has been added to your pipeline.`,
+          visibilityTime: 3000,
+        });
+        
+        // Navigate back to pipeline
+        navigation.goBack();
       }
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to create lead. Please try again.');
