@@ -21,66 +21,22 @@ export default function SettingsScreen({ navigation }: any) {
   };
 
   const handleLogout = () => {
-    console.log('🚪 Logout button pressed!'); // Debug log
+    console.log('🚪 Logout button pressed!');
     
-    // First show a toast to confirm the button is working
-    Toast.show({
-      type: 'info',
-      text1: '🚪 Logout Button Clicked',
-      text2: 'Processing logout request...',
-      position: 'top',
-      visibilityTime: 2000,
-    });
-    
-    // Show direct Alert confirmation - much clearer UX
     Alert.alert(
-      '🚪 Confirm Logout',
-      'Are you sure you want to logout from Strike CRM?',
+      'Confirm Logout',
+      'Are you sure you want to logout?',
       [
         {
           text: 'Cancel',
           style: 'cancel',
-          onPress: () => {
-            console.log('🚪 Logout cancelled by user');
-            Toast.show({
-              type: 'info',
-              text1: '↩️ Logout Cancelled',
-              text2: 'You remain logged in',
-              position: 'bottom',
-              visibilityTime: 2000,
-            });
-          }
         },
         {
-          text: 'Yes, Logout',
+          text: 'Logout',
           style: 'destructive',
           onPress: () => {
-            console.log('🚪 User confirmed logout - executing logout...');
-            console.log('🚪 Logout function available:', typeof logout);
-            
-            try {
-              // Show logout success toast before actually logging out
-              Toast.show({
-                type: 'success',
-                text1: '✅ Logging Out...',
-                text2: 'Please wait...',
-                position: 'top',
-                visibilityTime: 1500,
-              });
-              
-              // Execute logout immediately
-              logout();
-              console.log('🚪 Logout function called successfully');
-            } catch (error) {
-              console.error('🚪 Logout error:', error);
-              Toast.show({
-                type: 'error',
-                text1: '❌ Logout Failed',
-                text2: 'Please try again',
-                position: 'top',
-                visibilityTime: 3000,
-              });
-            }
+            console.log('🚪 Executing logout...');
+            logout();
           }
         }
       ]
