@@ -236,7 +236,7 @@ export default function LeadsScreen({ navigation }: any) {
             )}
           </ScrollView>
         ) : viewMode === 'kanban' ? (
-          <DraggableKanbanBoard 
+          <SimpleKanbanBoard 
             leads={filteredLeads}
             onLeadPress={handleLeadPress}
             refreshControl={
