@@ -284,6 +284,22 @@ export default function DashboardScreen({ navigation }: any) {
           </View>
         </View>
 
+        {/* Today's Tasks */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Today's Tasks</Text>
+            <TouchableOpacity onPress={() => console.log('View all tasks')}>
+              <Text style={styles.viewAllText}>View All</Text>
+            </TouchableOpacity>
+          </View>
+          <TaskManager 
+            showOnlyPending={true}
+            maxItems={5}
+            showCreateButton={false}
+            onTaskUpdate={onRefresh}
+          />
+        </View>
+
         {/* Recent Activity */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recent Activity</Text>
