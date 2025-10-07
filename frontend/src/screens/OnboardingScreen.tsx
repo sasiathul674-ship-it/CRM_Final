@@ -21,7 +21,7 @@ const { width } = Dimensions.get('window');
 export default function OnboardingScreen({ navigation }: any) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const { user, token } = useAuth();
+  const { user, token, completeOnboarding: completeOnboardingAuth } = useAuth();
   const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
   
   // Step 1: Profile Setup
