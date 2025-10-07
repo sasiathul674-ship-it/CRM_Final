@@ -11,6 +11,15 @@ export default function SettingsScreen({ navigation }: any) {
   const handleLogout = () => {
     console.log('🚪 Logout button pressed!'); // Debug log
     
+    // First show a toast to confirm the button is working
+    Toast.show({
+      type: 'info',
+      text1: '🚪 Logout Button Clicked',
+      text2: 'Processing logout request...',
+      position: 'top',
+      visibilityTime: 2000,
+    });
+    
     // Show direct Alert confirmation - much clearer UX
     Alert.alert(
       '🚪 Confirm Logout',
@@ -35,20 +44,31 @@ export default function SettingsScreen({ navigation }: any) {
           style: 'destructive',
           onPress: () => {
             console.log('🚪 User confirmed logout - executing logout...');
+            console.log('🚪 Logout function available:', typeof logout);
             
-            // Show logout success toast before actually logging out
-            Toast.show({
-              type: 'success',
-              text1: '✅ Logging Out...',
-              text2: 'Please wait...',
-              position: 'top',
-              visibilityTime: 1500,
-            });
-            
-            // Execute logout after a brief delay to show the toast
-            setTimeout(() => {
+            try {
+              // Show logout success toast before actually logging out
+              Toast.show({
+                type: 'success',
+                text1: '✅ Logging Out...',
+                text2: 'Please wait...',
+                position: 'top',
+                visibilityTime: 1500,
+              });
+              
+              // Execute logout immediately
               logout();
-            }, 500);
+              console.log('🚪 Logout function called successfully');
+            } catch (error) {
+              console.error('🚪 Logout error:', error);
+              Toast.show({
+                type: 'error',
+                text1: '❌ Logout Failed',
+                text2: 'Please try again',
+                position: 'top',
+                visibilityTime: 3000,
+              });
+            }
           }
         }
       ]
