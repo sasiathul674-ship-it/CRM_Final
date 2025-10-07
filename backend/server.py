@@ -395,6 +395,105 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
         "recent_activities": [Activity(**activity, id=activity["_id"]) for activity in recent_activities]
     }
 
+# Task endpoints
+@api_router.post("/tasks", response_model=Task)
+async def create_task(task: TaskCreate, current_user: dict = Depends(get_current_user)):
+    # If lead_id is provided, verify it belongs to the user
+    if task.lead_id:
+        lead = await db.leads.find_one({"_id": task.lead_id, "user_id": current_user["_id"]})
+        if not lead:
+            raise HTTPException(status_code=404, detail="Lead not found")
+    
+    task_doc = {
+        "_id": str(uuid.uuid4()),
+        **task.dict(),
+        "user_id": current_user["_id"],
+        "created_at": datetime.utcnow(),
+        "completed_at": None
+    }
+    
+    await db.tasks.insert_one(task_doc)
+    return Task(**task_doc, id=task_doc["_id"])
+
+@api_router.get("/tasks", response_model=List[Task])
+async def get_tasks(
+    status: Optional[str] = None,
+    lead_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    query = {"user_id": current_user["_id"]}
+    
+    if status:
+        query["status"] = status
+    if lead_id:
+        query["lead_id"] = lead_id
+    
+    tasks = await db.tasks.find(query).sort("created_at", -1).to_list(1000)
+    return [Task(**task, id=task["_id"]) for task in tasks]
+
+@api_router.get("/tasks/{task_id}", response_model=Task)
+async def get_task(task_id: str, current_user: dict = Depends(get_current_user)):
+    task = await db.tasks.find_one({"_id": task_id, "user_id": current_user["_id"]})
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return Task(**task, id=task["_id"])
+
+@api_router.put("/tasks/{task_id}", response_model=Task)
+async def update_task(task_id: str, task_update: TaskCreate, current_user: dict = Depends(get_current_user)):
+    # If lead_id is provided, verify it belongs to the user
+    if task_update.lead_id:
+        lead = await db.leads.find_one({"_id": task_update.lead_id, "user_id": current_user["_id"]})
+        if not lead:
+            raise HTTPException(status_code=404, detail="Lead not found")
+    
+    result = await db.tasks.update_one(
+        {"_id": task_id, "user_id": current_user["_id"]},
+        {"$set": task_update.dict()}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    updated_task = await db.tasks.find_one({"_id": task_id})
+    return Task(**updated_task, id=updated_task["_id"])
+
+@api_router.patch("/tasks/{task_id}/status")
+async def update_task_status(task_id: str, status: str, current_user: dict = Depends(get_current_user)):
+    valid_statuses = ["pending", "completed", "cancelled"]
+    if status not in valid_statuses:
+        raise HTTPException(status_code=400, detail="Invalid status")
+    
+    update_data = {"status": status}
+    if status == "completed":
+        update_data["completed_at"] = datetime.utcnow()
+    elif status == "pending":
+        update_data["completed_at"] = None
+    
+    result = await db.tasks.update_one(
+        {"_id": task_id, "user_id": current_user["_id"]},
+        {"$set": update_data}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    return {"success": True}
+
+@api_router.delete("/tasks/{task_id}")
+async def delete_task(task_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.tasks.delete_one({"_id": task_id, "user_id": current_user["_id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"success": True}
+
+@api_router.get("/leads/{lead_id}/tasks", response_model=List[Task])
+async def get_lead_tasks(lead_id: str, current_user: dict = Depends(get_current_user)):
+    # Verify lead belongs to user
+    lead = await db.leads.find_one({"_id": lead_id, "user_id": current_user["_id"]})
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    
+    tasks = await db.tasks.find({"lead_id": lead_id, "user_id": current_user["_id"]}).sort("created_at", -1).to_list(1000)
+    return [Task(**task, id=task["_id"]) for task in tasks]
+
 # Include the router in the main app
 app.include_router(api_router)
 
