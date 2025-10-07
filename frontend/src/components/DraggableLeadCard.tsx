@@ -214,10 +214,6 @@ export default function DraggableLeadCard({
             </View>
           </View>
           
-          {/* Company */}
-          {lead.company && (
-            <Text style={styles.company} numberOfLines={1}>{lead.company}</Text>
-          )}
           
           {/* Contact Info */}
           <View style={styles.contactSection}>
