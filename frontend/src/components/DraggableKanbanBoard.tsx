@@ -269,6 +269,9 @@ export default function DraggableKanbanBoard({ leads, onLeadPress, refreshContro
         contentContainerStyle={styles.boardContent}
         refreshControl={refreshControl}
         scrollEnabled={!draggedLead} // Disable scroll while dragging
+        decelerationRate="fast"
+        snapToInterval={COLUMN_WIDTH + 16} // Snap to columns
+        snapToAlignment="start"
       >
         {STAGES.map(renderColumn)}
       </ScrollView>
