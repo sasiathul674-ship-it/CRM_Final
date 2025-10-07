@@ -148,6 +148,19 @@ export default function DraggableKanbanBoard({ leads, onLeadPress, refreshContro
   };
 
   const handleStageMove = async (leadId: string, fromStage: string, toStage: string) => {
+    // If moving to "Closed" stage, show the deal outcome modal
+    if (toStage === 'Closed') {
+      const lead = leads.find(l => l.id === leadId);
+      if (lead) {
+        setDealOutcomeModal({
+          visible: true,
+          lead,
+          pendingStage: toStage,
+        });
+        return; // Don't move yet, wait for modal confirmation
+      }
+    }
+
     const success = await updateLeadStage(leadId, toStage);
     
     if (success) {
