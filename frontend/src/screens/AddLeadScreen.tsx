@@ -100,6 +100,7 @@ export default function AddLeadScreen({ navigation, route }: any) {
         stage: 'New Leads',
         priority,
         order_value: dealValue ? parseFloat(dealValue) : undefined,
+        currency: currency, // Include currency info
         notes: notes.trim() ? `Source: ${leadSource}\n\n${notes.trim()}` : `Source: ${leadSource}`,
       };
 
