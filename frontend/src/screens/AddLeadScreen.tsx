@@ -113,7 +113,10 @@ export default function AddLeadScreen({ navigation, route }: any) {
           visibilityTime: 3000,
         });
         
-        // Navigate back to pipeline
+        // Trigger refresh callback and navigate back
+        if (onLeadAdded) {
+          onLeadAdded();
+        }
         navigation.goBack();
       }
     } catch (error: any) {
