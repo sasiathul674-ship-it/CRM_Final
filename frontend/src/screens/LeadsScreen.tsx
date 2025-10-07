@@ -49,7 +49,14 @@ export default function LeadsScreen({ navigation }: any) {
   const handleAddLead = () => {
     navigation.navigate('AddLead', { 
       onLeadAdded: () => {
+        console.log('🔄 Refreshing leads after creation...');
         fetchLeads(); // Refresh leads when returning
+        Toast.show({
+          type: 'success',
+          text1: '🔄 Pipeline Updated',
+          text2: 'Lead added and pipeline refreshed',
+          position: 'bottom',
+        });
       }
     });
   };
