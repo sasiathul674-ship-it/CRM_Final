@@ -41,12 +41,29 @@ export interface BusinessCard {
   created_at: string;
 }
 
+export interface Task {
+  id: string;
+  lead_id: string;
+  title: string;
+  description?: string;
+  task_type: 'call' | 'email' | 'note' | 'meeting' | 'follow_up' | 'other';
+  status: 'pending' | 'completed' | 'cancelled';
+  priority: 'low' | 'medium' | 'high';
+  due_date?: string;
+  completed_date?: string;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface DashboardStats {
   total_leads: number;
   leads_by_stage: { [key: string]: number };
   this_week_calls: number;
   this_week_emails: number;
   recent_activities: Activity[];
+  pending_tasks: Task[];
+  overdue_tasks: Task[];
 }
 
 class ApiService {
