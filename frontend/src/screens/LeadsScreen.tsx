@@ -28,6 +28,13 @@ export default function LeadsScreen({ navigation }: any) {
     setRefreshing(false);
   }, [fetchLeads]);
 
+  // Refresh leads when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchLeads();
+    }, [fetchLeads])
+  );
+
   const filteredLeads = leads.filter(lead => {
     const matchesSearch = lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          (lead.company?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
