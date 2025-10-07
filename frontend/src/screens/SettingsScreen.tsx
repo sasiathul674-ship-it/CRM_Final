@@ -8,6 +8,18 @@ import Toast from 'react-native-toast-message';
 export default function SettingsScreen({ navigation }: any) {
   const { user, logout } = useAuth();
 
+  // Test function to verify button works
+  const testButtonPress = () => {
+    console.log('🔧 Test button pressed - this should work!');
+    Toast.show({
+      type: 'success',
+      text1: '✅ Button Works!',
+      text2: 'The TouchableOpacity is functioning correctly',
+      position: 'top',
+      visibilityTime: 3000,
+    });
+  };
+
   const handleLogout = () => {
     console.log('🚪 Logout button pressed!'); // Debug log
     
