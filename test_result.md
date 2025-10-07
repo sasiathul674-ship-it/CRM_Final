@@ -323,8 +323,13 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
-  stuck_tasks: []
+  current_focus:
+    - "Won/Lost Deal Closure Modal Integration"
+    - "Contact List View & Search Implementation"
+    - "Settings Screen Button Functionality"
+    - "Navigation Fix - Updated to LeadsScreen"
+  stuck_tasks:
+    - "Settings Screen Button Functionality"
   test_all: false
   test_priority: "high_first"
 
