@@ -48,6 +48,15 @@ export default function DashboardScreen({ navigation }: any) {
     }
   }, [token, selectedDateFilter]);
 
+  // Refresh data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (token) {
+        fetchDashboardStats();
+      }
+    }, [token])
+  );
+
   const fetchDashboardStats = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/dashboard/stats`, {
