@@ -53,6 +53,8 @@ export default function AddLeadScreen({ navigation }: any) {
   const [priority, setPriority] = useState('medium');
   const [dealValue, setDealValue] = useState('');
   const [notes, setNotes] = useState('');
+  const [currency, setCurrency] = useState('INR'); // Default to Rupees
+  const [countryCode, setCountryCode] = useState('+91'); // Default to India
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
