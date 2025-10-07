@@ -601,13 +601,13 @@ class TaskStatusUpdate(BaseModel):
 @api_router.patch("/tasks/{task_id}/status")
 async def update_task_status(task_id: str, status_update: TaskStatusUpdate, current_user: dict = Depends(get_current_user)):
     valid_statuses = ["pending", "completed", "cancelled"]
-    if status not in valid_statuses:
+    if status_update.status not in valid_statuses:
         raise HTTPException(status_code=400, detail="Invalid status")
     
-    update_data = {"status": status}
-    if status == "completed":
+    update_data = {"status": status_update.status}
+    if status_update.status == "completed":
         update_data["completed_at"] = datetime.utcnow()
-    elif status == "pending":
+    elif status_update.status == "pending":
         update_data["completed_at"] = None
     
     result = await db.tasks.update_one(
