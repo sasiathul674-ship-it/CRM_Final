@@ -740,4 +740,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  dateInputButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dateInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  dateInputText: {
+    fontSize: 16,
+    color: '#9CA3AF',
+    marginLeft: 8,
+  },
+  dateSelectedText: {
+    color: '#374151',
+  },
+  clearDateButton: {
+    padding: 4,
+  },
 });
