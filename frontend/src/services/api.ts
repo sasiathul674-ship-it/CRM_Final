@@ -198,6 +198,59 @@ class ApiService {
     });
     return this.handleResponse(response);
   }
+
+  // Task Management API
+  async getLeadTasks(token: string, leadId: string): Promise<Task[]> {
+    const response = await fetch(`${API_BASE_URL}/api/leads/${leadId}/tasks`, {
+      headers: this.getHeaders(token),
+    });
+    return this.handleResponse(response);
+  }
+
+  async getAllTasks(token: string, status?: string): Promise<Task[]> {
+    const params = status ? `?status=${status}` : '';
+    const response = await fetch(`${API_BASE_URL}/api/tasks${params}`, {
+      headers: this.getHeaders(token),
+    });
+    return this.handleResponse(response);
+  }
+
+  async createTask(token: string, taskData: Partial<Task>): Promise<Task> {
+    const response = await fetch(`${API_BASE_URL}/api/tasks`, {
+      method: 'POST',
+      headers: this.getHeaders(token),
+      body: JSON.stringify(taskData),
+    });
+    return this.handleResponse(response);
+  }
+
+  async updateTask(token: string, taskId: string, taskData: Partial<Task>): Promise<Task> {
+    const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
+      method: 'PUT',
+      headers: this.getHeaders(token),
+      body: JSON.stringify(taskData),
+    });
+    return this.handleResponse(response);
+  }
+
+  async updateTaskStatus(token: string, taskId: string, status: 'pending' | 'completed' | 'cancelled'): Promise<Task> {
+    const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}/status`, {
+      method: 'PATCH',
+      headers: this.getHeaders(token),
+      body: JSON.stringify({ status }),
+    });
+    return this.handleResponse(response);
+  }
+
+  async deleteTask(token: string, taskId: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
+      method: 'DELETE',
+      headers: this.getHeaders(token),
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to delete task: ${response.statusText}`);
+    }
+  }
 }
 
 export const apiService = new ApiService();
