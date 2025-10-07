@@ -515,6 +515,15 @@ export default function LeadDetailScreen({ route, navigation }: any) {
           {renderTabs()}
           
           {activeTab === 'timeline' && renderActivityTimeline()}
+          {activeTab === 'tasks' && (
+            <View style={styles.tasksContainer}>
+              <TaskManager 
+                leadId={leadId}
+                showCreateButton={true}
+                onTaskUpdate={fetchActivities}
+              />
+            </View>
+          )}
           {activeTab === 'overview' && (
             <View style={styles.overviewContainer}>
               <Text style={styles.sectionTitle}>Lead Overview</Text>
