@@ -9,14 +9,23 @@ export default function SettingsScreen() {
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Logout', style: 'destructive', onPress: logout },
-      ]
-    );
+    console.log('Logout button pressed!'); // Debug log
+    Toast.show({
+      type: 'info',
+      text1: 'Logout Confirmation',
+      text2: 'Are you sure you want to logout?',
+      position: 'top',
+      visibilityTime: 4000,
+      onPress: () => {
+        logout();
+        Toast.show({
+          type: 'success',
+          text1: '✅ Logged Out',
+          text2: 'You have been successfully logged out',
+          position: 'top',
+        });
+      }
+    });
   };
 
   return (
