@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """
-Backend Testing Suite for Strike CRM - Order Value Field Testing
-Tests lead creation with new order_value field and notification functionality
+Strike CRM Backend API Testing Suite - Phase 2 Implementation
+Comprehensive testing for all critical backend APIs including:
+- Lead CRUD with Order Value Field
+- Lead Stage Updates for Kanban
+- Dashboard Stats API for Enhanced Tiles  
+- Authentication Flow
+- Activity Logging
 """
 
 import requests
@@ -9,17 +14,19 @@ import json
 import sys
 from datetime import datetime
 import uuid
+from typing import Dict, Any, List
 
 # Backend URL from environment
 BACKEND_URL = "https://strike-crm.preview.emergentagent.com/api"
 
-class BackendTester:
+class StrikeCRMTester:
     def __init__(self):
         self.session = requests.Session()
         self.auth_token = None
         self.test_user_email = f"testuser_{uuid.uuid4().hex[:8]}@strikecrm.com"
         self.test_user_password = "SecurePass123!"
         self.created_leads = []
+        self.created_activities = []
         
     def log(self, message, level="INFO"):
         timestamp = datetime.now().strftime("%H:%M:%S")
