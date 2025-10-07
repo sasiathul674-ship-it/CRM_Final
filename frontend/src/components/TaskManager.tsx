@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
 import { apiService, Task } from '../services/api';
+import DatePickerComponent from './DatePickerComponent';
 import * as Haptics from 'expo-haptics';
 
 interface TaskManagerProps {
