@@ -13,8 +13,10 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import DraggableLeadCard from './DraggableLeadCard';
+import DealOutcomeModal from './DealOutcomeModal';
 import { useLeads } from '../hooks/useLeads';
 import { Lead } from '../services/api';
+import Toast from 'react-native-toast-message';
 
 const { width } = Dimensions.get('window');
 const COLUMN_WIDTH = width > 400 ? 300 : 280;
