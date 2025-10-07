@@ -106,6 +106,8 @@ class LeadCreate(BaseModel):
     stage: str = "New Leads"  # Default stage
     priority: str = "medium"  # high, medium, low
     notes: Optional[str] = None
+    order_value: Optional[float] = None  # Deal value in currency
+    deal_status: Optional[str] = None  # "won", "lost" - only for Closed stage
 
 class Lead(BaseModel):
     id: str
@@ -117,6 +119,8 @@ class Lead(BaseModel):
     stage: str
     priority: str
     notes: Optional[str] = None
+    order_value: Optional[float] = None
+    deal_status: Optional[str] = None  # "won", "lost" - only for Closed stage
     user_id: str
     created_at: datetime
     last_interaction: Optional[datetime] = None
