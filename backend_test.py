@@ -13,18 +13,13 @@ import uuid
 # Backend URL from environment
 BACKEND_URL = "https://bizcard-crm.preview.emergentagent.com/api"
 
-class DashboardTester:
+class BackendTester:
     def __init__(self):
-        self.base_url = BASE_URL
+        self.session = requests.Session()
         self.auth_token = None
-        self.test_user_id = None
-        self.test_leads = []
-        self.test_activities = []
-        self.results = {
-            "passed": 0,
-            "failed": 0,
-            "errors": []
-        }
+        self.test_user_email = f"testuser_{uuid.uuid4().hex[:8]}@strikecrm.com"
+        self.test_user_password = "SecurePass123!"
+        self.created_leads = []
 
     def log_result(self, test_name, success, message="", response=None):
         """Log test results with enhanced formatting"""
