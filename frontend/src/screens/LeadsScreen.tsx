@@ -257,6 +257,10 @@ const styles = StyleSheet.create({
   filterButtons: {
     maxHeight: 40,
   },
+  dateFilterButtons: {
+    maxHeight: 40,
+    marginBottom: 8,
+  },
   filterButtonsContent: {
     paddingRight: 20,
   },
@@ -268,6 +272,21 @@ const styles = StyleSheet.create({
     borderColor: '#CBD5E1',
     backgroundColor: '#FFFFFF',
     marginRight: 8,
+  },
+  dateFilterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: '#F8FAFC',
+    borderColor: '#E2E8F0',
+  },
+  dateFilterButtonText: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '500',
+    marginLeft: 4,
   },
   activeFilterButton: {
     backgroundColor: '#4F46E5',
