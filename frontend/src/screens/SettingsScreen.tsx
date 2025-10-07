@@ -121,18 +121,6 @@ export default function SettingsScreen({ navigation }: any) {
         </View>
 
         <View style={styles.section}>
-          {/* Test Button */}
-          <TouchableOpacity 
-            style={[styles.menuItem, { backgroundColor: '#F0F9FF' }]} 
-            onPress={testButtonPress}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="bug-outline" size={20} color="#3B82F6" />
-            <Text style={[styles.menuText, { color: '#3B82F6' }]}>Test Button (Tap Me)</Text>
-            <Ionicons name="chevron-forward" size={20} color="#D1D5DB" />
-          </TouchableOpacity>
-
-          {/* Logout Button */}
           <TouchableOpacity 
             style={styles.menuItem} 
             onPress={handleLogout}
