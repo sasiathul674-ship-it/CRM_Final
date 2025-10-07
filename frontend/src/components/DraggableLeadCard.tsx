@@ -317,6 +317,10 @@ const styles = StyleSheet.create({
   nameSection: {
     flex: 1,
   },
+  rightSection: {
+    alignItems: 'flex-end',
+    gap: 8,
+  },
   name: {
     fontSize: 16,
     fontWeight: '700',
