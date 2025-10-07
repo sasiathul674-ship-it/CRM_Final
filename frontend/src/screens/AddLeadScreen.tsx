@@ -82,7 +82,8 @@ export default function AddLeadScreen({ navigation }: any) {
         address: address.trim() || undefined,
         stage: 'New Leads',
         priority,
-        notes: notes.trim() ? `Source: ${leadSource}\n\nDeal Value: $${dealValue || 'Not specified'}\n\n${notes.trim()}` : `Source: ${leadSource}\n\nDeal Value: $${dealValue || 'Not specified'}`,
+        order_value: dealValue ? parseFloat(dealValue) : undefined,
+        notes: notes.trim() ? `Source: ${leadSource}\n\n${notes.trim()}` : `Source: ${leadSource}`,
       };
 
       const newLead = await apiService.createLead(token!, leadData);
