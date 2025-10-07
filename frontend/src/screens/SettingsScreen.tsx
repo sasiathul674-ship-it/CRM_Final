@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import Toast from 'react-native-toast-message';
 
-export default function SettingsScreen() {
+export default function SettingsScreen({ navigation }: any) {
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
