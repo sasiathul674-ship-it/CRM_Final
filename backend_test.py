@@ -95,66 +95,111 @@ class StrikeCRMTester:
             self.log(f"❌ Authentication test failed: {e}", "ERROR")
             return False
     
-    def test_lead_creation_with_order_value(self):
-        """Test creating leads with different order values"""
-        self.log("Testing lead creation with order_value field...")
+    def test_lead_crud_with_order_value(self) -> bool:
+        """Test Lead CRUD operations with order_value field"""
+        self.log("💰 Testing Lead CRUD with Order Value Field")
         
-        test_leads = [
-            {
-                "name": "Premium Enterprise Client",
-                "company": "TechCorp Solutions",
-                "phone": "+1-555-0101",
-                "email": "contact@techcorp.com",
-                "priority": "high",
-                "order_value": 50000.00,  # Decimal value
-                "notes": "High-value enterprise deal"
-            },
-            {
-                "name": "Mid-Market Opportunity",
-                "company": "GrowthCo Ltd",
-                "phone": "+1-555-0102", 
-                "email": "sales@growthco.com",
-                "priority": "medium",
-                "order_value": 15000,  # Integer value
-                "notes": "Mid-market expansion opportunity"
-            },
-            {
-                "name": "Small Business Lead",
-                "company": "StartupXYZ",
-                "phone": "+1-555-0103",
-                "email": "founder@startupxyz.com", 
-                "priority": "low",
-                "order_value": 2500.50,  # Small decimal value
-                "notes": "Small business starter package"
-            }
-        ]
-        
-        success_count = 0
-        
-        for i, lead_data in enumerate(test_leads, 1):
-            try:
-                self.log(f"Creating lead {i}/3: {lead_data['name']} (Order Value: ${lead_data['order_value']})")
-                
+        try:
+            # Test creating leads with various order values
+            test_leads_data = [
+                {
+                    "name": "John Smith",
+                    "company": "Tech Solutions Inc",
+                    "phone": "+1-555-0101",
+                    "email": "john@techsolutions.com",
+                    "stage": "New Leads",
+                    "priority": "high",
+                    "order_value": 15000.0,
+                    "notes": "High-value enterprise client"
+                },
+                {
+                    "name": "Sarah Johnson",
+                    "company": "Marketing Pro",
+                    "phone": "+1-555-0102", 
+                    "email": "sarah@marketingpro.com",
+                    "stage": "Contacted",
+                    "priority": "medium",
+                    "order_value": 2500.50,
+                    "notes": "Small business marketing package"
+                },
+                {
+                    "name": "Mike Wilson",
+                    "company": "Wilson Consulting",
+                    "phone": "+1-555-0103",
+                    "email": "mike@wilsonconsulting.com", 
+                    "stage": "Follow-up",
+                    "priority": "low",
+                    "order_value": None,
+                    "notes": "Potential consulting engagement"
+                }
+            ]
+            
+            # Create leads
+            for lead_data in test_leads_data:
                 response = self.session.post(f"{BACKEND_URL}/leads", json=lead_data)
-                
-                if response.status_code == 200:
-                    created_lead = response.json()
-                    self.created_leads.append(created_lead)
-                    
-                    # Verify order_value is correctly stored
-                    if created_lead.get("order_value") == lead_data["order_value"]:
-                        self.log(f"✅ Lead created successfully with correct order_value: ${created_lead['order_value']}")
-                        success_count += 1
-                    else:
-                        self.log(f"❌ Order value mismatch. Expected: ${lead_data['order_value']}, Got: ${created_lead.get('order_value')}", "ERROR")
-                else:
+                if response.status_code != 200:
                     self.log(f"❌ Lead creation failed: {response.status_code} - {response.text}", "ERROR")
+                    return False
                     
-            except Exception as e:
-                self.log(f"❌ Lead creation error: {str(e)}", "ERROR")
-        
-        self.log(f"Lead creation test completed: {success_count}/3 successful")
-        return success_count == 3
+                lead = response.json()
+                self.created_leads.append(lead)
+                
+                # Verify order_value field
+                expected_value = lead_data["order_value"]
+                actual_value = lead.get("order_value")
+                
+                if expected_value != actual_value:
+                    self.log(f"❌ Order value mismatch: expected {expected_value}, got {actual_value}", "ERROR")
+                    return False
+                    
+                self.log(f"✅ Lead created: {lead['name']} with order_value: ${actual_value}")
+                
+            # Test retrieving all leads
+            response = self.session.get(f"{BACKEND_URL}/leads")
+            if response.status_code != 200:
+                self.log(f"❌ Get leads failed: {response.status_code}", "ERROR")
+                return False
+                
+            all_leads = response.json()
+            self.log(f"✅ Retrieved {len(all_leads)} leads")
+            
+            # Verify order_value fields are present
+            for lead in all_leads:
+                if "order_value" not in lead:
+                    self.log(f"❌ Missing order_value field in lead: {lead['name']}", "ERROR")
+                    return False
+                    
+            # Test updating a lead's order_value
+            if self.created_leads:
+                lead_to_update = self.created_leads[0]
+                update_data = {
+                    "name": lead_to_update["name"],
+                    "company": lead_to_update["company"],
+                    "phone": lead_to_update["phone"],
+                    "email": lead_to_update["email"],
+                    "stage": lead_to_update["stage"],
+                    "priority": lead_to_update["priority"],
+                    "order_value": 55000.0,  # Updated value
+                    "notes": lead_to_update["notes"]
+                }
+                
+                response = self.session.put(f"{BACKEND_URL}/leads/{lead_to_update['id']}", json=update_data)
+                if response.status_code != 200:
+                    self.log(f"❌ Lead update failed: {response.status_code}", "ERROR")
+                    return False
+                    
+                updated_lead = response.json()
+                if updated_lead["order_value"] != 55000.0:
+                    self.log(f"❌ Order value update failed: expected 55000.0, got {updated_lead['order_value']}", "ERROR")
+                    return False
+                    
+                self.log(f"✅ Lead order_value updated: ${lead_to_update['order_value']} → ${updated_lead['order_value']}")
+                
+            return True
+            
+        except Exception as e:
+            self.log(f"❌ Lead CRUD test failed: {e}", "ERROR")
+            return False
     
     def test_lead_retrieval_with_order_value(self):
         """Test retrieving leads to verify order_value is returned correctly"""
