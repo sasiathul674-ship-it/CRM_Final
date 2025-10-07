@@ -231,15 +231,6 @@ export default function DraggableLeadCard({
             )}
           </View>
           
-          {/* Order Value */}
-          {lead.order_value && (
-            <View style={styles.orderValueContainer}>
-              <Ionicons name="cash-outline" size={14} color="#059669" />
-              <Text style={styles.orderValueText}>
-                {getCurrencySymbol(lead.currency)}{lead.order_value.toLocaleString()}
-              </Text>
-            </View>
-          )}
           
           {/* Footer */}
           <View style={styles.footer}>
