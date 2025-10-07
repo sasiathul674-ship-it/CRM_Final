@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
 import { apiService, Lead, Activity } from '../services/api';
+import TaskManager from '../components/TaskManager';
 import * as Haptics from 'expo-haptics';
 
 const STAGES = [
