@@ -333,6 +333,7 @@ export default function DashboardScreen({ navigation }: any) {
             </TouchableOpacity>
           </View>
           <TaskManager 
+            key={taskRefreshKey}
             showOnlyPending={true}
             maxItems={5}
             showCreateButton={false}
