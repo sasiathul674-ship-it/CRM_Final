@@ -27,6 +27,7 @@ class StrikeCRMTester:
         self.test_user_password = "SecurePass123!"
         self.created_leads = []
         self.created_activities = []
+        self.created_tasks = []
         
     def log(self, message: str, level: str = "INFO"):
         """Log test messages with timestamp"""
