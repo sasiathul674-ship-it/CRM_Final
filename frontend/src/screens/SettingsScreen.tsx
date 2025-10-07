@@ -133,9 +133,14 @@ export default function SettingsScreen({ navigation }: any) {
         </View>
 
         <View style={styles.section}>
-          <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+          <TouchableOpacity 
+            style={styles.menuItem} 
+            onPress={handleLogout}
+            activeOpacity={0.7}
+          >
             <Ionicons name="log-out-outline" size={20} color="#EF4444" />
             <Text style={[styles.menuText, styles.logoutText]}>Logout</Text>
+            <Ionicons name="chevron-forward" size={20} color="#D1D5DB" />
           </TouchableOpacity>
         </View>
       </View>
