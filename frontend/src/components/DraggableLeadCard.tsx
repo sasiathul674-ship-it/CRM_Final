@@ -402,9 +402,9 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   orderValueText: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '700',
     color: '#059669',
-    marginLeft: 4,
+    marginLeft: 3,
   },
 });
