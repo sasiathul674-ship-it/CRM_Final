@@ -84,6 +84,11 @@ export default function DraggableKanbanBoard({ leads, onLeadPress, refreshContro
     toStage: string;
     timestamp: number;
   } | null>(null);
+  const [dealOutcomeModal, setDealOutcomeModal] = useState<{
+    visible: boolean;
+    lead: Lead | null;
+    pendingStage: string | null;
+  }>({ visible: false, lead: null, pendingStage: null });
   
   const { updateLeadStage } = useLeads();
   const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
