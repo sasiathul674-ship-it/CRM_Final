@@ -180,7 +180,7 @@ export default function DashboardScreen({ navigation }: any) {
           >
             <Ionicons name="notifications-outline" size={24} color="#374151" />
             <View style={styles.notificationBadge}>
-              <Text style={styles.notificationCount">3</Text>
+              <Text style={styles.notificationCount}>3</Text>
             </View>
           </TouchableOpacity>
         </View>
