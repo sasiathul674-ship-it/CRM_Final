@@ -156,7 +156,12 @@ export default function TaskManager({
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       onTaskUpdate?.();
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to create task');
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: error.message || 'Failed to create task',
+        visibilityTime: 4000,
+      });
     } finally {
       setIsSubmitting(false);
     }
