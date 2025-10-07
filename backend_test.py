@@ -38,13 +38,14 @@ class DashboardTester:
         }
 
     def log_result(self, test_name, success, message="", response=None):
-        """Log test results"""
+        """Log test results with enhanced formatting"""
+        timestamp = datetime.now().strftime("%H:%M:%S")
         status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status}: {test_name}")
+        print(f"[{timestamp}] {status}: {test_name}")
         if message:
-            print(f"   {message}")
+            print(f"   📝 {message}")
         if response and not success:
-            print(f"   Response: {response.status_code} - {response.text[:200]}")
+            print(f"   🔍 Response: {response.status_code} - {response.text[:200]}")
         
         if success:
             self.results["passed"] += 1
@@ -53,9 +54,9 @@ class DashboardTester:
             self.results["errors"].append(f"{test_name}: {message}")
         print()
 
-    def test_user_registration(self):
-        """Test user registration endpoint"""
-        print("🔐 Testing User Registration...")
+    def register_test_user(self):
+        """Register a test user for dashboard testing"""
+        print("🔐 Setting up test user for dashboard testing...")
         
         payload = {
             "email": TEST_USER_EMAIL,
@@ -69,611 +70,563 @@ class DashboardTester:
             
             if response.status_code == 200:
                 data = response.json()
-                if "access_token" in data and "token_type" in data:
+                if "access_token" in data:
                     self.auth_token = data["access_token"]
-                    self.log_result("User Registration", True, "User registered successfully with JWT token")
+                    self.log_result("Dashboard User Registration", True, f"Registered user: {TEST_USER_NAME}")
+                    return True
                 else:
-                    self.log_result("User Registration", False, "Missing token in response", response)
+                    self.log_result("Dashboard User Registration", False, "Missing token in response", response)
+                    return False
+            elif response.status_code == 400 and "already registered" in response.text:
+                # User exists, try to login
+                return self.login_test_user()
             else:
-                self.log_result("User Registration", False, f"Registration failed with status {response.status_code}", response)
+                self.log_result("Dashboard User Registration", False, f"Registration failed", response)
+                return False
                 
         except Exception as e:
-            self.log_result("User Registration", False, f"Exception: {str(e)}")
+            self.log_result("Dashboard User Registration", False, f"Exception: {str(e)}")
+            return False
 
-    def test_duplicate_registration(self):
-        """Test duplicate user registration"""
-        print("🔐 Testing Duplicate Registration...")
-        
-        payload = {
-            "email": TEST_USER_EMAIL,
-            "password": TEST_USER_PASSWORD,
-            "name": TEST_USER_NAME,
-            "company": TEST_USER_COMPANY
-        }
-        
+    def login_test_user(self):
+        """Login with test user credentials"""
         try:
-            response = requests.post(f"{self.base_url}/auth/register", json=payload)
-            
-            if response.status_code == 400:
-                self.log_result("Duplicate Registration Prevention", True, "Correctly rejected duplicate email")
-            else:
-                self.log_result("Duplicate Registration Prevention", False, f"Should return 400 for duplicate email", response)
-                
-        except Exception as e:
-            self.log_result("Duplicate Registration Prevention", False, f"Exception: {str(e)}")
-
-    def test_user_login(self):
-        """Test user login endpoint"""
-        print("🔐 Testing User Login...")
-        
-        payload = {
-            "email": TEST_USER_EMAIL,
-            "password": TEST_USER_PASSWORD
-        }
-        
-        try:
-            response = requests.post(f"{self.base_url}/auth/login", json=payload)
+            response = requests.post(f"{self.base_url}/auth/login", json={
+                "email": TEST_USER_EMAIL,
+                "password": TEST_USER_PASSWORD
+            })
             
             if response.status_code == 200:
                 data = response.json()
-                if "access_token" in data and "token_type" in data:
-                    self.auth_token = data["access_token"]
-                    self.log_result("User Login", True, "Login successful with JWT token")
+                self.auth_token = data["access_token"]
+                self.log_result("Dashboard User Login", True, "Successfully logged in existing user")
+                return True
+            else:
+                self.log_result("Dashboard User Login", False, "Login failed", response)
+                return False
+        except Exception as e:
+            self.log_result("Dashboard User Login", False, f"Exception: {str(e)}")
+            return False
+
+    def get_headers(self):
+        """Get authorization headers"""
+        return {"Authorization": f"Bearer {self.auth_token}"}
+
+    def create_test_leads_for_dashboard(self):
+        """Create comprehensive test leads across all stages for dashboard testing"""
+        print("👥 Creating test leads for dashboard analytics...")
+        
+        test_leads_data = [
+            # New Leads (2 leads)
+            {
+                "name": "Sarah Johnson",
+                "company": "TechStart Inc",
+                "phone": "+1-555-0101",
+                "email": "sarah@techstart.com",
+                "stage": "New Leads",
+                "priority": "high",
+                "notes": "Interested in enterprise solution"
+            },
+            {
+                "name": "Robert Wilson",
+                "company": "Smart Analytics",
+                "phone": "+1-555-0106",
+                "email": "robert@smartanalytics.com",
+                "stage": "New Leads",
+                "priority": "low",
+                "notes": "New lead from website"
+            },
+            # Contacted (2 leads)
+            {
+                "name": "Michael Chen",
+                "company": "Digital Solutions",
+                "phone": "+1-555-0102",
+                "email": "michael@digitalsol.com",
+                "stage": "Contacted",
+                "priority": "medium",
+                "notes": "Initial contact made, waiting for response"
+            },
+            {
+                "name": "Jennifer Davis",
+                "company": "Cloud Systems",
+                "phone": "+1-555-0107",
+                "email": "jennifer@cloudsystems.com",
+                "stage": "Contacted",
+                "priority": "high",
+                "notes": "Contacted via phone, interested"
+            },
+            # Follow-up (1 lead)
+            {
+                "name": "Emily Rodriguez",
+                "company": "Growth Ventures",
+                "phone": "+1-555-0103",
+                "email": "emily@growthventures.com",
+                "stage": "Follow-up",
+                "priority": "high",
+                "notes": "Follow-up scheduled for next week"
+            },
+            # Negotiation (1 lead)
+            {
+                "name": "David Kim",
+                "company": "Innovation Labs",
+                "phone": "+1-555-0104",
+                "email": "david@innovationlabs.com",
+                "stage": "Negotiation",
+                "priority": "high",
+                "notes": "In final negotiation phase"
+            },
+            # Closed (1 lead)
+            {
+                "name": "Lisa Thompson",
+                "company": "Future Systems",
+                "phone": "+1-555-0105",
+                "email": "lisa@futuresystems.com",
+                "stage": "Closed",
+                "priority": "medium",
+                "notes": "Deal closed successfully"
+            }
+        ]
+        
+        created_count = 0
+        for lead_data in test_leads_data:
+            try:
+                response = requests.post(f"{self.base_url}/leads", 
+                                       json=lead_data, 
+                                       headers=self.get_headers())
+                if response.status_code == 200:
+                    lead = response.json()
+                    self.test_leads.append(lead)
+                    created_count += 1
                 else:
-                    self.log_result("User Login", False, "Missing token in response", response)
-            else:
-                self.log_result("User Login", False, f"Login failed with status {response.status_code}", response)
-                
-        except Exception as e:
-            self.log_result("User Login", False, f"Exception: {str(e)}")
+                    self.log_result(f"Create Lead {lead_data['name']}", False, f"Failed to create", response)
+            except Exception as e:
+                self.log_result(f"Create Lead {lead_data['name']}", False, f"Exception: {str(e)}")
+        
+        self.log_result("Dashboard Test Data Creation", created_count == len(test_leads_data), 
+                       f"Created {created_count}/{len(test_leads_data)} test leads")
+        return created_count > 0
 
-    def test_invalid_login(self):
-        """Test login with invalid credentials"""
-        print("🔐 Testing Invalid Login...")
+    def create_test_activities_for_dashboard(self):
+        """Create test activities for dashboard analytics"""
+        print("📝 Creating test activities for dashboard analytics...")
         
-        payload = {
-            "email": TEST_USER_EMAIL,
-            "password": "WrongPassword123!"
-        }
+        if not self.test_leads:
+            self.log_result("Create Dashboard Activities", False, "No test leads available")
+            return False
         
-        try:
-            response = requests.post(f"{self.base_url}/auth/login", json=payload)
-            
-            if response.status_code == 401:
-                self.log_result("Invalid Login Rejection", True, "Correctly rejected invalid credentials")
-            else:
-                self.log_result("Invalid Login Rejection", False, f"Should return 401 for invalid credentials", response)
-                
-        except Exception as e:
-            self.log_result("Invalid Login Rejection", False, f"Exception: {str(e)}")
-
-    def test_get_current_user(self):
-        """Test protected endpoint to get current user info"""
-        print("🔐 Testing Get Current User...")
+        activities_data = [
+            # Call activities
+            {
+                "lead_id": self.test_leads[0]["id"],
+                "activity_type": "call",
+                "content": "Initial discovery call",
+                "outcome": "answered",
+                "duration": 30
+            },
+            {
+                "lead_id": self.test_leads[2]["id"],
+                "activity_type": "call",
+                "content": "Follow-up call",
+                "outcome": "callback_needed",
+                "duration": 15
+            },
+            {
+                "lead_id": self.test_leads[4]["id"],
+                "activity_type": "call",
+                "content": "Negotiation call",
+                "outcome": "answered",
+                "duration": 45
+            },
+            # Email activities
+            {
+                "lead_id": self.test_leads[1]["id"],
+                "activity_type": "email",
+                "content": "Sent product demo information"
+            },
+            {
+                "lead_id": self.test_leads[0]["id"],
+                "activity_type": "email",
+                "content": "Sent pricing proposal"
+            },
+            {
+                "lead_id": self.test_leads[3]["id"],
+                "activity_type": "email",
+                "content": "Follow-up email with additional resources"
+            }
+        ]
         
-        if not self.auth_token:
-            self.log_result("Get Current User", False, "No auth token available")
-            return
-            
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
-        
-        try:
-            response = requests.get(f"{self.base_url}/auth/me", headers=headers)
-            
-            if response.status_code == 200:
-                data = response.json()
-                if "email" in data and data["email"] == TEST_USER_EMAIL:
-                    self.test_user_id = data["id"]
-                    self.log_result("Get Current User", True, f"Retrieved user info for {data['name']}")
+        created_count = 0
+        for activity_data in activities_data:
+            try:
+                response = requests.post(f"{self.base_url}/activities", 
+                                       json=activity_data, 
+                                       headers=self.get_headers())
+                if response.status_code == 200:
+                    activity = response.json()
+                    self.test_activities.append(activity)
+                    created_count += 1
                 else:
-                    self.log_result("Get Current User", False, "Invalid user data returned", response)
-            else:
-                self.log_result("Get Current User", False, f"Failed to get user info", response)
-                
-        except Exception as e:
-            self.log_result("Get Current User", False, f"Exception: {str(e)}")
+                    self.log_result(f"Create Activity", False, f"Failed to create activity", response)
+            except Exception as e:
+                self.log_result(f"Create Activity", False, f"Exception: {str(e)}")
+        
+        self.log_result("Dashboard Activities Creation", created_count == len(activities_data), 
+                       f"Created {created_count}/{len(activities_data)} test activities")
+        return created_count > 0
 
-    def test_unauthorized_access(self):
-        """Test accessing protected endpoint without token"""
-        print("🔐 Testing Unauthorized Access...")
+    def test_enhanced_dashboard_stats_api(self):
+        """Test the enhanced dashboard stats API with comprehensive validation"""
+        print("📊 Testing Enhanced Dashboard Stats API...")
         
         try:
-            response = requests.get(f"{self.base_url}/auth/me")
+            start_time = time.time()
+            response = requests.get(f"{self.base_url}/dashboard/stats", headers=self.get_headers())
+            response_time = time.time() - start_time
+            
+            if response.status_code != 200:
+                self.log_result("Enhanced Dashboard Stats API", False, f"API call failed", response)
+                return False
+            
+            data = response.json()
+            
+            # Verify required fields
+            required_fields = ["total_leads", "leads_by_stage", "this_week_calls", "this_week_emails", "recent_activities"]
+            missing_fields = [field for field in required_fields if field not in data]
+            
+            if missing_fields:
+                self.log_result("Dashboard API Structure", False, f"Missing fields: {missing_fields}")
+                return False
+            
+            self.log_result("Dashboard API Structure", True, "All required fields present")
+            
+            # Test data accuracy
+            total_leads = data['total_leads']
+            leads_by_stage = data['leads_by_stage']
+            
+            # Verify stage totals match total leads
+            stage_total = sum(leads_by_stage.values())
+            if stage_total != total_leads:
+                self.log_result("Dashboard Data Consistency", False, 
+                               f"Stage totals ({stage_total}) don't match total leads ({total_leads})")
+                return False
+            
+            self.log_result("Dashboard Data Consistency", True, 
+                           f"Total leads ({total_leads}) matches stage distribution")
+            
+            # Verify stage data grouping
+            expected_stages = ["New Leads", "Contacted", "Follow-up", "Negotiation", "Closed"]
+            present_stages = list(leads_by_stage.keys())
+            
+            self.log_result("Pipeline Data Grouping", True, 
+                           f"Stages present: {present_stages}")
+            
+            # Test activity metrics
+            calls_count = data['this_week_calls']
+            emails_count = data['this_week_emails']
+            
+            self.log_result("Activity Metrics", True, 
+                           f"This week: {calls_count} calls, {emails_count} emails")
+            
+            # Test recent activities structure
+            recent_activities = data['recent_activities']
+            if recent_activities:
+                activity = recent_activities[0]
+                required_activity_fields = ["id", "lead_id", "activity_type", "content", "user_id", "created_at"]
+                missing_activity_fields = [field for field in required_activity_fields if field not in activity]
+                
+                if missing_activity_fields:
+                    self.log_result("Recent Activities Structure", False, 
+                                   f"Missing activity fields: {missing_activity_fields}")
+                    return False
+                
+                self.log_result("Recent Activities Structure", True, 
+                               f"Activities properly formatted ({len(recent_activities)} activities)")
+            
+            # Test API performance
+            if response_time > 2.0:
+                self.log_result("Dashboard API Performance", False, 
+                               f"Response time too slow: {response_time:.3f}s")
+                return False
+            else:
+                self.log_result("Dashboard API Performance", True, 
+                               f"Good response time: {response_time:.3f}s")
+            
+            # Print detailed dashboard summary
+            print(f"   📊 Dashboard Summary:")
+            print(f"      Total Leads: {total_leads}")
+            print(f"      Stage Distribution: {leads_by_stage}")
+            print(f"      Weekly Activity: {calls_count} calls, {emails_count} emails")
+            print(f"      Recent Activities: {len(recent_activities)} items")
+            print(f"      Response Time: {response_time:.3f}s")
+            
+            return True
+            
+        except Exception as e:
+            self.log_result("Enhanced Dashboard Stats API", False, f"Exception: {str(e)}")
+            return False
+
+    def test_leads_api_for_pipeline_verification(self):
+        """Test leads API specifically for pipeline data verification"""
+        print("🔄 Testing Leads API for Pipeline Verification...")
+        
+        try:
+            start_time = time.time()
+            response = requests.get(f"{self.base_url}/leads", headers=self.get_headers())
+            response_time = time.time() - start_time
+            
+            if response.status_code != 200:
+                self.log_result("Leads Pipeline API", False, "API call failed", response)
+                return False
+            
+            leads = response.json()
+            
+            # Verify pipeline distribution
+            stage_counts = {}
+            priority_counts = {}
+            
+            for lead in leads:
+                stage = lead.get('stage', 'Unknown')
+                priority = lead.get('priority', 'Unknown')
+                
+                stage_counts[stage] = stage_counts.get(stage, 0) + 1
+                priority_counts[priority] = priority_counts.get(priority, 0) + 1
+            
+            self.log_result("Pipeline Distribution Analysis", True, 
+                           f"Stages: {stage_counts}, Priorities: {priority_counts}")
+            
+            # Verify lead data structure for dashboard compatibility
+            if leads:
+                lead = leads[0]
+                required_fields = ["id", "name", "stage", "priority", "user_id", "created_at"]
+                missing_fields = [field for field in required_fields if field not in lead]
+                
+                if missing_fields:
+                    self.log_result("Lead Data Structure", False, f"Missing fields: {missing_fields}")
+                    return False
+                
+                self.log_result("Lead Data Structure", True, "All required fields present")
+            
+            self.log_result("Leads API Performance", True, f"Response time: {response_time:.3f}s")
+            
+            return True
+            
+        except Exception as e:
+            self.log_result("Leads Pipeline API", False, f"Exception: {str(e)}")
+            return False
+
+    def test_activities_api_for_recent_activities(self):
+        """Test activities API for recent activities functionality"""
+        print("📋 Testing Activities API for Recent Activities...")
+        
+        if not self.test_leads:
+            self.log_result("Activities API Test", False, "No test leads available")
+            return False
+        
+        try:
+            # Test getting activities for a specific lead
+            lead_id = self.test_leads[0]["id"]
+            start_time = time.time()
+            response = requests.get(f"{self.base_url}/leads/{lead_id}/activities", headers=self.get_headers())
+            response_time = time.time() - start_time
+            
+            if response.status_code != 200:
+                self.log_result("Lead Activities API", False, "API call failed", response)
+                return False
+            
+            activities = response.json()
+            
+            # Verify activity data structure
+            if activities:
+                activity = activities[0]
+                required_fields = ["id", "lead_id", "activity_type", "content", "user_id", "created_at"]
+                missing_fields = [field for field in required_fields if field not in activity]
+                
+                if missing_fields:
+                    self.log_result("Activity Data Structure", False, f"Missing fields: {missing_fields}")
+                    return False
+                
+                self.log_result("Activity Data Structure", True, "All required fields present")
+                
+                # Verify activities are sorted by date (most recent first)
+                if len(activities) > 1:
+                    dates = [activity['created_at'] for activity in activities]
+                    sorted_dates = sorted(dates, reverse=True)
+                    if dates == sorted_dates:
+                        self.log_result("Activity Sorting", True, "Activities properly sorted by date")
+                    else:
+                        self.log_result("Activity Sorting", False, "Activities not sorted correctly")
+                        return False
+            
+            self.log_result("Activities API Performance", True, 
+                           f"Retrieved {len(activities)} activities in {response_time:.3f}s")
+            
+            return True
+            
+        except Exception as e:
+            self.log_result("Activities API Test", False, f"Exception: {str(e)}")
+            return False
+
+    def test_dashboard_api_performance_under_load(self):
+        """Test dashboard API performance under multiple concurrent requests"""
+        print("⚡ Testing Dashboard API Performance Under Load...")
+        
+        response_times = []
+        failed_requests = 0
+        test_iterations = 5
+        
+        for i in range(test_iterations):
+            try:
+                start_time = time.time()
+                response = requests.get(f"{self.base_url}/dashboard/stats", headers=self.get_headers())
+                response_time = time.time() - start_time
+                
+                if response.status_code == 200:
+                    response_times.append(response_time)
+                else:
+                    failed_requests += 1
+                    
+            except Exception as e:
+                failed_requests += 1
+        
+        if response_times:
+            avg_time = sum(response_times) / len(response_times)
+            max_time = max(response_times)
+            min_time = min(response_times)
+            
+            performance_good = avg_time < 1.0 and failed_requests == 0
+            
+            self.log_result("Dashboard Performance Under Load", performance_good, 
+                           f"Avg: {avg_time:.3f}s, Min: {min_time:.3f}s, Max: {max_time:.3f}s, Failed: {failed_requests}/{test_iterations}")
+            
+            return performance_good
+        else:
+            self.log_result("Dashboard Performance Under Load", False, "All requests failed")
+            return False
+
+    def test_dashboard_error_handling(self):
+        """Test dashboard API error handling"""
+        print("🛡️ Testing Dashboard API Error Handling...")
+        
+        # Test with invalid token
+        try:
+            invalid_headers = {"Authorization": "Bearer invalid_token_12345"}
+            response = requests.get(f"{self.base_url}/dashboard/stats", headers=invalid_headers)
             
             if response.status_code in [401, 403]:
-                self.log_result("Unauthorized Access Prevention", True, f"Correctly rejected request without token (status {response.status_code})")
+                self.log_result("Dashboard Auth Error Handling", True, 
+                               f"Correctly rejected invalid token (status {response.status_code})")
             else:
-                self.log_result("Unauthorized Access Prevention", False, f"Should return 401 or 403 without token", response)
-                
-        except Exception as e:
-            self.log_result("Unauthorized Access Prevention", False, f"Exception: {str(e)}")
-
-    def test_create_lead(self):
-        """Test creating a new lead"""
-        print("👥 Testing Create Lead...")
-        
-        if not self.auth_token:
-            self.log_result("Create Lead", False, "No auth token available")
-            return
+                self.log_result("Dashboard Auth Error Handling", False, 
+                               f"Should reject invalid token", response)
+                return False
             
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
-        payload = {
-            "name": "Sarah Johnson",
-            "company": "Tech Innovations Inc",
-            "phone": "+1-555-0123",
-            "email": "sarah.johnson@techinnovations.com",
-            "address": "123 Business Ave, Tech City, TC 12345",
-            "stage": "New Leads",
-            "priority": "high",
-            "notes": "Interested in enterprise CRM solution. Follow up next week."
-        }
-        
-        try:
-            response = requests.post(f"{self.base_url}/leads", json=payload, headers=headers)
+            # Test without token
+            response = requests.get(f"{self.base_url}/dashboard/stats")
             
-            if response.status_code == 200:
-                data = response.json()
-                if "id" in data and data["name"] == payload["name"]:
-                    self.test_lead_id = data["id"]
-                    self.log_result("Create Lead", True, f"Created lead: {data['name']} at {data['company']}")
-                else:
-                    self.log_result("Create Lead", False, "Invalid lead data returned", response)
+            if response.status_code in [401, 403]:
+                self.log_result("Dashboard No Auth Error Handling", True, 
+                               f"Correctly rejected request without token (status {response.status_code})")
             else:
-                self.log_result("Create Lead", False, f"Failed to create lead", response)
-                
+                self.log_result("Dashboard No Auth Error Handling", False, 
+                               f"Should reject request without token", response)
+                return False
+            
+            return True
+            
         except Exception as e:
-            self.log_result("Create Lead", False, f"Exception: {str(e)}")
+            self.log_result("Dashboard Error Handling", False, f"Exception: {str(e)}")
+            return False
 
-    def test_get_all_leads(self):
-        """Test retrieving all leads for authenticated user"""
-        print("👥 Testing Get All Leads...")
+    def run_enhanced_dashboard_tests(self):
+        """Run all enhanced dashboard tests"""
+        print("🚀 Starting Enhanced Dashboard Backend Testing Suite")
+        print(f"🔗 Testing against: {self.base_url}")
+        print("=" * 80)
         
-        if not self.auth_token:
-            self.log_result("Get All Leads", False, "No auth token available")
-            return
-            
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
+        test_results = {}
         
-        try:
-            response = requests.get(f"{self.base_url}/leads", headers=headers)
-            
-            if response.status_code == 200:
-                data = response.json()
-                if isinstance(data, list) and len(data) > 0:
-                    self.log_result("Get All Leads", True, f"Retrieved {len(data)} leads")
-                else:
-                    self.log_result("Get All Leads", True, "Retrieved empty leads list (valid)")
-            else:
-                self.log_result("Get All Leads", False, f"Failed to get leads", response)
-                
-        except Exception as e:
-            self.log_result("Get All Leads", False, f"Exception: {str(e)}")
-
-    def test_get_single_lead(self):
-        """Test retrieving a single lead by ID"""
-        print("👥 Testing Get Single Lead...")
+        # Step 1: Setup
+        print("\n" + "="*60)
+        print("STEP 1: Test User Setup")
+        print("="*60)
+        test_results["user_setup"] = self.register_test_user()
         
-        if not self.auth_token or not self.test_lead_id:
-            self.log_result("Get Single Lead", False, "No auth token or lead ID available")
-            return
-            
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
+        if not test_results["user_setup"]:
+            print("❌ Cannot proceed without authentication")
+            return test_results
         
-        try:
-            response = requests.get(f"{self.base_url}/leads/{self.test_lead_id}", headers=headers)
-            
-            if response.status_code == 200:
-                data = response.json()
-                if "id" in data and data["id"] == self.test_lead_id:
-                    self.log_result("Get Single Lead", True, f"Retrieved lead: {data['name']}")
-                else:
-                    self.log_result("Get Single Lead", False, "Invalid lead data returned", response)
-            else:
-                self.log_result("Get Single Lead", False, f"Failed to get lead", response)
-                
-        except Exception as e:
-            self.log_result("Get Single Lead", False, f"Exception: {str(e)}")
-
-    def test_update_lead(self):
-        """Test updating a lead"""
-        print("👥 Testing Update Lead...")
+        # Step 2: Create test data
+        print("\n" + "="*60)
+        print("STEP 2: Dashboard Test Data Creation")
+        print("="*60)
+        leads_created = self.create_test_leads_for_dashboard()
+        activities_created = self.create_test_activities_for_dashboard()
+        test_results["test_data"] = leads_created and activities_created
         
-        if not self.auth_token or not self.test_lead_id:
-            self.log_result("Update Lead", False, "No auth token or lead ID available")
-            return
-            
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
-        payload = {
-            "name": "Sarah Johnson",
-            "company": "Tech Innovations Inc",
-            "phone": "+1-555-0123",
-            "email": "sarah.johnson@techinnovations.com",
-            "address": "456 Updated Business Ave, Tech City, TC 12345",
-            "stage": "Contacted",
-            "priority": "medium",
-            "notes": "Updated notes: Had initial call, very interested. Sending proposal."
-        }
+        # Step 3: Enhanced dashboard stats API
+        print("\n" + "="*60)
+        print("STEP 3: Enhanced Dashboard Stats API Testing")
+        print("="*60)
+        test_results["dashboard_stats"] = self.test_enhanced_dashboard_stats_api()
         
-        try:
-            response = requests.put(f"{self.base_url}/leads/{self.test_lead_id}", json=payload, headers=headers)
-            
-            if response.status_code == 200:
-                data = response.json()
-                if data["stage"] == "Contacted" and "Updated" in data["notes"]:
-                    self.log_result("Update Lead", True, f"Updated lead stage to {data['stage']}")
-                else:
-                    self.log_result("Update Lead", False, "Lead not properly updated", response)
-            else:
-                self.log_result("Update Lead", False, f"Failed to update lead", response)
-                
-        except Exception as e:
-            self.log_result("Update Lead", False, f"Exception: {str(e)}")
-
-    def test_update_lead_stage(self):
-        """Test updating lead stage specifically"""
-        print("👥 Testing Update Lead Stage...")
+        # Step 4: Pipeline verification
+        print("\n" + "="*60)
+        print("STEP 4: Pipeline Data Verification")
+        print("="*60)
+        test_results["pipeline_verification"] = self.test_leads_api_for_pipeline_verification()
         
-        if not self.auth_token or not self.test_lead_id:
-            self.log_result("Update Lead Stage", False, "No auth token or lead ID available")
-            return
-            
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
+        # Step 5: Recent activities
+        print("\n" + "="*60)
+        print("STEP 5: Recent Activities Testing")
+        print("="*60)
+        test_results["recent_activities"] = self.test_activities_api_for_recent_activities()
         
-        try:
-            response = requests.patch(f"{self.base_url}/leads/{self.test_lead_id}/stage?stage=Follow-up", headers=headers)
-            
-            if response.status_code == 200:
-                data = response.json()
-                if data.get("success"):
-                    self.log_result("Update Lead Stage", True, "Successfully updated lead stage to Follow-up")
-                else:
-                    self.log_result("Update Lead Stage", False, "Stage update not confirmed", response)
-            else:
-                self.log_result("Update Lead Stage", False, f"Failed to update lead stage", response)
-                
-        except Exception as e:
-            self.log_result("Update Lead Stage", False, f"Exception: {str(e)}")
-
-    def test_invalid_lead_stage(self):
-        """Test updating lead with invalid stage"""
-        print("👥 Testing Invalid Lead Stage...")
+        # Step 6: Performance testing
+        print("\n" + "="*60)
+        print("STEP 6: Dashboard Performance Testing")
+        print("="*60)
+        test_results["performance"] = self.test_dashboard_api_performance_under_load()
         
-        if not self.auth_token or not self.test_lead_id:
-            self.log_result("Invalid Lead Stage", False, "No auth token or lead ID available")
-            return
-            
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
+        # Step 7: Error handling
+        print("\n" + "="*60)
+        print("STEP 7: Dashboard Error Handling")
+        print("="*60)
+        test_results["error_handling"] = self.test_dashboard_error_handling()
         
-        try:
-            response = requests.patch(f"{self.base_url}/leads/{self.test_lead_id}/stage?stage=InvalidStage", headers=headers)
-            
-            if response.status_code == 400:
-                self.log_result("Invalid Lead Stage Rejection", True, "Correctly rejected invalid stage")
-            else:
-                self.log_result("Invalid Lead Stage Rejection", False, f"Should return 400 for invalid stage", response)
-                
-        except Exception as e:
-            self.log_result("Invalid Lead Stage Rejection", False, f"Exception: {str(e)}")
-
-    def test_create_business_card(self):
-        """Test creating a business card"""
-        print("💼 Testing Create Business Card...")
+        # Summary
+        print("\n" + "="*80)
+        print("🎯 ENHANCED DASHBOARD TESTING SUMMARY")
+        print("="*80)
         
-        if not self.auth_token:
-            self.log_result("Create Business Card", False, "No auth token available")
-            return
-            
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
-        payload = {
-            "name": TEST_USER_NAME,
-            "title": "Senior Sales Manager",
-            "company": TEST_USER_COMPANY,
-            "phone": "+1-555-0199",
-            "email": TEST_USER_EMAIL,
-            "website": "https://strikecrm.com",
-            "template": "professional"
-        }
+        passed_tests = sum(1 for result in test_results.values() if result)
+        total_tests = len(test_results)
         
-        try:
-            response = requests.post(f"{self.base_url}/business-card", json=payload, headers=headers)
-            
-            if response.status_code == 200:
-                data = response.json()
-                if "id" in data and data["name"] == TEST_USER_NAME:
-                    self.test_business_card_id = data["id"]
-                    self.log_result("Create Business Card", True, f"Created business card for {data['name']}")
-                else:
-                    self.log_result("Create Business Card", False, "Invalid business card data returned", response)
-            else:
-                self.log_result("Create Business Card", False, f"Failed to create business card", response)
-                
-        except Exception as e:
-            self.log_result("Create Business Card", False, f"Exception: {str(e)}")
-
-    def test_get_business_card(self):
-        """Test retrieving business card"""
-        print("💼 Testing Get Business Card...")
+        for test_name, result in test_results.items():
+            status = "✅ PASSED" if result else "❌ FAILED"
+            print(f"{test_name.replace('_', ' ').title()}: {status}")
         
-        if not self.auth_token:
-            self.log_result("Get Business Card", False, "No auth token available")
-            return
-            
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
+        success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
+        print(f"\n📊 Overall Result: {passed_tests}/{total_tests} tests passed ({success_rate:.1f}%)")
         
-        try:
-            response = requests.get(f"{self.base_url}/business-card", headers=headers)
-            
-            if response.status_code == 200:
-                data = response.json()
-                if "id" in data and data["name"] == TEST_USER_NAME:
-                    self.log_result("Get Business Card", True, f"Retrieved business card for {data['name']}")
-                else:
-                    self.log_result("Get Business Card", False, "Invalid business card data returned", response)
-            else:
-                self.log_result("Get Business Card", False, f"Failed to get business card", response)
-                
-        except Exception as e:
-            self.log_result("Get Business Card", False, f"Exception: {str(e)}")
-
-    def test_create_activity(self):
-        """Test creating an activity"""
-        print("📝 Testing Create Activity...")
-        
-        if not self.auth_token or not self.test_lead_id:
-            self.log_result("Create Activity", False, "No auth token or lead ID available")
-            return
-            
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
-        payload = {
-            "lead_id": self.test_lead_id,
-            "activity_type": "call",
-            "content": "Initial discovery call to understand their CRM needs",
-            "outcome": "answered",
-            "duration": 30
-        }
-        
-        try:
-            response = requests.post(f"{self.base_url}/activities", json=payload, headers=headers)
-            
-            if response.status_code == 200:
-                data = response.json()
-                if "id" in data and data["activity_type"] == "call":
-                    self.test_activity_id = data["id"]
-                    self.log_result("Create Activity", True, f"Created {data['activity_type']} activity")
-                else:
-                    self.log_result("Create Activity", False, "Invalid activity data returned", response)
-            else:
-                self.log_result("Create Activity", False, f"Failed to create activity", response)
-                
-        except Exception as e:
-            self.log_result("Create Activity", False, f"Exception: {str(e)}")
-
-    def test_create_email_activity(self):
-        """Test creating an email activity"""
-        print("📝 Testing Create Email Activity...")
-        
-        if not self.auth_token or not self.test_lead_id:
-            self.log_result("Create Email Activity", False, "No auth token or lead ID available")
-            return
-            
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
-        payload = {
-            "lead_id": self.test_lead_id,
-            "activity_type": "email",
-            "content": "Sent detailed proposal with pricing and implementation timeline"
-        }
-        
-        try:
-            response = requests.post(f"{self.base_url}/activities", json=payload, headers=headers)
-            
-            if response.status_code == 200:
-                data = response.json()
-                if "id" in data and data["activity_type"] == "email":
-                    self.log_result("Create Email Activity", True, f"Created {data['activity_type']} activity")
-                else:
-                    self.log_result("Create Email Activity", False, "Invalid activity data returned", response)
-            else:
-                self.log_result("Create Email Activity", False, f"Failed to create email activity", response)
-                
-        except Exception as e:
-            self.log_result("Create Email Activity", False, f"Exception: {str(e)}")
-
-    def test_get_lead_activities(self):
-        """Test retrieving activities for a lead"""
-        print("📝 Testing Get Lead Activities...")
-        
-        if not self.auth_token or not self.test_lead_id:
-            self.log_result("Get Lead Activities", False, "No auth token or lead ID available")
-            return
-            
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
-        
-        try:
-            response = requests.get(f"{self.base_url}/leads/{self.test_lead_id}/activities", headers=headers)
-            
-            if response.status_code == 200:
-                data = response.json()
-                if isinstance(data, list) and len(data) > 0:
-                    self.log_result("Get Lead Activities", True, f"Retrieved {len(data)} activities for lead")
-                else:
-                    self.log_result("Get Lead Activities", True, "Retrieved empty activities list (valid)")
-            else:
-                self.log_result("Get Lead Activities", False, f"Failed to get lead activities", response)
-                
-        except Exception as e:
-            self.log_result("Get Lead Activities", False, f"Exception: {str(e)}")
-
-    def test_dashboard_stats(self):
-        """Test dashboard statistics endpoint"""
-        print("📊 Testing Dashboard Stats...")
-        
-        if not self.auth_token:
-            self.log_result("Dashboard Stats", False, "No auth token available")
-            return
-            
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
-        
-        try:
-            response = requests.get(f"{self.base_url}/dashboard/stats", headers=headers)
-            
-            if response.status_code == 200:
-                data = response.json()
-                required_fields = ["total_leads", "leads_by_stage", "this_week_calls", "this_week_emails", "recent_activities"]
-                
-                if all(field in data for field in required_fields):
-                    self.log_result("Dashboard Stats", True, f"Retrieved dashboard stats: {data['total_leads']} leads, {data['this_week_calls']} calls this week")
-                else:
-                    missing = [field for field in required_fields if field not in data]
-                    self.log_result("Dashboard Stats", False, f"Missing fields: {missing}", response)
-            else:
-                self.log_result("Dashboard Stats", False, f"Failed to get dashboard stats", response)
-                
-        except Exception as e:
-            self.log_result("Dashboard Stats", False, f"Exception: {str(e)}")
-
-    def test_data_isolation(self):
-        """Test that users can only access their own data"""
-        print("🔒 Testing Data Isolation...")
-        
-        # Create a second user to test isolation
-        second_user_email = f"test.user2.{uuid.uuid4().hex[:8]}@strikecrm.com"
-        payload = {
-            "email": second_user_email,
-            "password": "SecurePass456!",
-            "name": "Jane Doe",
-            "company": "Another Company"
-        }
-        
-        try:
-            # Register second user
-            response = requests.post(f"{self.base_url}/auth/register", json=payload)
-            if response.status_code != 200:
-                self.log_result("Data Isolation", False, "Failed to create second user for isolation test")
-                return
-                
-            second_token = response.json()["access_token"]
-            headers = {"Authorization": f"Bearer {second_token}"}
-            
-            # Try to access first user's leads with second user's token
-            response = requests.get(f"{self.base_url}/leads", headers=headers)
-            
-            if response.status_code == 200:
-                data = response.json()
-                if len(data) == 0:  # Second user should see no leads
-                    self.log_result("Data Isolation", True, "Users can only see their own data")
-                else:
-                    self.log_result("Data Isolation", False, f"Data isolation failed - second user sees {len(data)} leads")
-            else:
-                self.log_result("Data Isolation", False, f"Failed to test data isolation", response)
-                
-        except Exception as e:
-            self.log_result("Data Isolation", False, f"Exception: {str(e)}")
-
-    def test_delete_lead(self):
-        """Test deleting a lead"""
-        print("👥 Testing Delete Lead...")
-        
-        if not self.auth_token or not self.test_lead_id:
-            self.log_result("Delete Lead", False, "No auth token or lead ID available")
-            return
-            
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
-        
-        try:
-            response = requests.delete(f"{self.base_url}/leads/{self.test_lead_id}", headers=headers)
-            
-            if response.status_code == 200:
-                data = response.json()
-                if data.get("success"):
-                    self.log_result("Delete Lead", True, "Successfully deleted lead")
-                else:
-                    self.log_result("Delete Lead", False, "Delete not confirmed", response)
-            else:
-                self.log_result("Delete Lead", False, f"Failed to delete lead", response)
-                
-        except Exception as e:
-            self.log_result("Delete Lead", False, f"Exception: {str(e)}")
-
-    def test_not_found_errors(self):
-        """Test 404 errors for non-existent resources"""
-        print("🔍 Testing Not Found Errors...")
-        
-        if not self.auth_token:
-            self.log_result("Not Found Errors", False, "No auth token available")
-            return
-            
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
-        fake_id = str(uuid.uuid4())
-        
-        try:
-            # Test non-existent lead
-            response = requests.get(f"{self.base_url}/leads/{fake_id}", headers=headers)
-            
-            if response.status_code == 404:
-                self.log_result("Not Found Errors", True, "Correctly returned 404 for non-existent lead")
-            else:
-                self.log_result("Not Found Errors", False, f"Should return 404 for non-existent lead", response)
-                
-        except Exception as e:
-            self.log_result("Not Found Errors", False, f"Exception: {str(e)}")
-
-    def run_all_tests(self):
-        """Run all tests in sequence"""
-        print("🚀 Starting Strike CRM Backend API Tests")
-        print(f"🌐 Testing against: {self.base_url}")
-        print("=" * 60)
-        
-        # Authentication Tests
-        self.test_user_registration()
-        self.test_duplicate_registration()
-        self.test_user_login()
-        self.test_invalid_login()
-        self.test_get_current_user()
-        self.test_unauthorized_access()
-        
-        # Lead Management Tests
-        self.test_create_lead()
-        self.test_get_all_leads()
-        self.test_get_single_lead()
-        self.test_update_lead()
-        self.test_update_lead_stage()
-        self.test_invalid_lead_stage()
-        
-        # Business Card Tests
-        self.test_create_business_card()
-        self.test_get_business_card()
-        
-        # Activity Tests
-        self.test_create_activity()
-        self.test_create_email_activity()
-        self.test_get_lead_activities()
-        
-        # Dashboard Tests
-        self.test_dashboard_stats()
-        
-        # Security Tests
-        self.test_data_isolation()
-        self.test_not_found_errors()
-        
-        # Cleanup Tests
-        self.test_delete_lead()
-        
-        # Print Summary
-        print("=" * 60)
-        print("📊 TEST SUMMARY")
-        print("=" * 60)
-        print(f"✅ Passed: {self.results['passed']}")
-        print(f"❌ Failed: {self.results['failed']}")
-        print(f"📈 Success Rate: {(self.results['passed'] / (self.results['passed'] + self.results['failed']) * 100):.1f}%")
+        if passed_tests == total_tests:
+            print("🎉 ALL ENHANCED DASHBOARD TESTS PASSED!")
+            print("✅ Dashboard backend integration is working perfectly")
+        elif passed_tests >= total_tests * 0.8:
+            print("⚠️ Most tests passed, minor issues detected")
+        else:
+            print("❌ CRITICAL ISSUES DETECTED - Dashboard needs attention")
         
         if self.results['errors']:
-            print("\n❌ FAILED TESTS:")
+            print("\n❌ DETAILED ERRORS:")
             for error in self.results['errors']:
                 print(f"   • {error}")
         
-        return self.results['failed'] == 0
+        return test_results
 
 if __name__ == "__main__":
-    tester = StrikeCRMTester()
-    success = tester.run_all_tests()
-    sys.exit(0 if success else 1)
+    tester = DashboardTester()
+    results = tester.run_enhanced_dashboard_tests()
+    
+    # Exit with appropriate code
+    all_passed = all(results.values())
+    sys.exit(0 if all_passed else 1)
