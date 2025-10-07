@@ -20,6 +20,19 @@ import Toast from 'react-native-toast-message';
 
 const LEAD_SOURCES = ['Website', 'Referral', 'Cold Call', 'Social Media', 'Email Campaign', 'Other'];
 const PRIORITIES = ['low', 'medium', 'high'];
+const CURRENCIES = [
+  { code: 'INR', symbol: '₹', name: 'Rupees' },
+  { code: 'USD', symbol: '$', name: 'Dollars' },
+  { code: 'GBP', symbol: '£', name: 'Pounds' },
+  { code: 'EUR', symbol: '€', name: 'Euros' }
+];
+const COUNTRY_CODES = [
+  { code: '+91', country: 'India', flag: '🇮🇳' },
+  { code: '+1', country: 'USA', flag: '🇺🇸' },
+  { code: '+44', country: 'UK', flag: '🇬🇧' },
+  { code: '+33', country: 'France', flag: '🇫🇷' },
+  { code: '+49', country: 'Germany', flag: '🇩🇪' }
+];
 
 const getPriorityColor = (priority: string) => {
   switch (priority) {
