@@ -46,7 +46,15 @@ export default function BusinessCardScreen() {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [showFullscreenQR, setShowFullscreenQR] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shareAnalytics, setShareAnalytics] = useState({
+    total_shares: 0,
+    qr_scans: 0,
+    link_clicks: 0,
+    last_shared: null
+  });
   
   // Form states
   const [name, setName] = useState('');
@@ -56,6 +64,8 @@ export default function BusinessCardScreen() {
   const [email, setEmail] = useState('');
   const [website, setWebsite] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState('professional');
+  
+  const qrRef = useRef<any>(null);
   
   const { user, token } = useAuth();
   const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
