@@ -12,6 +12,8 @@ export interface Lead {
   stage: string;
   priority: string;
   notes?: string;
+  order_value?: number;  // Deal value in currency
+  deal_status?: string;  // "won", "lost" - only for Closed stage
   user_id: string;
   created_at: string;
   last_interaction?: string;
