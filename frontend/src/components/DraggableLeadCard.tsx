@@ -60,9 +60,11 @@ export default function DraggableLeadCard({
   onDragEnd, 
   isBeingDragged 
 }: DraggableLeadCardProps) {
+  const [showKebabMenu, setShowKebabMenu] = useState(false);
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const translateX = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(0)).current;
+  const kebabMenuAnim = useRef(new Animated.Value(0)).current;
 
   const handleCall = (e: any) => {
     e.stopPropagation();
