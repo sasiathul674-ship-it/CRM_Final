@@ -327,26 +327,15 @@ const styles = StyleSheet.create({
     color: '#1E293B',
     marginBottom: 4,
   },
-  priorityContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  priorityDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 4,
+  priorityBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
   },
   priorityText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '700',
     letterSpacing: 0.5,
-  },
-  priorityBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
   },
   company: {
     fontSize: 14,
