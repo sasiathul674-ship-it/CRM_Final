@@ -344,35 +344,24 @@ export default function DashboardScreen({ navigation }: any) {
         </View>
       </ScrollView>
 
-      {/* Date Picker Modal */}
-      <Modal
+      {/* Date Picker Component */}
+      <DatePickerComponent
         visible={showDatePicker}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowDatePicker(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Date Range</Text>
-            {/* Add date picker implementation here */}
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => {
-                setSelectedDateFilter('Custom');
-                setShowDatePicker(false);
-              }}
-            >
-              <Text style={styles.modalButtonText}>Apply</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.modalButton, styles.modalCancelButton]}
-              onPress={() => setShowDatePicker(false)}
-            >
-              <Text style={styles.modalCancelText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setShowDatePicker(false)}
+        onSelectDate={(dateRange) => {
+          if (dateRange.includes('_')) {
+            // Range selection
+            const [start, end] = dateRange.split('_');
+            setDateRange({ start: new Date(start), end: new Date(end) });
+          } else {
+            // Single date selection
+            setDateRange({ start: new Date(dateRange), end: new Date(dateRange) });
+          }
+          setSelectedDateFilter('Custom');
+        }}
+        mode="range"
+        title="Select Date Range for Dashboard"
+      />
     </SafeAreaView>
   );
 }
