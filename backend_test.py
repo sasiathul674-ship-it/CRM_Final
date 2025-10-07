@@ -394,48 +394,63 @@ class StrikeCRMTester:
         except Exception as e:
             self.log(f"❌ Cleanup failed: {e}", "ERROR")
     
-    def run_all_tests(self):
-        """Run all backend tests for order_value functionality"""
-        self.log("🚀 Starting Strike CRM Backend Tests - Order Value Field Testing")
-        self.log("=" * 70)
+    def run_all_tests(self) -> Dict[str, bool]:
+        """Run all backend tests and return results"""
+        self.log("🚀 Starting Strike CRM Backend API Testing Suite - Phase 2")
+        self.log(f"Testing against: {BACKEND_URL}")
+        self.log("=" * 80)
         
-        # Authentication
-        if not self.register_test_user():
-            self.log("❌ Authentication failed - cannot proceed with tests", "ERROR")
-            return False
-        
-        # Test results tracking
         test_results = {}
         
-        # Run all tests
-        test_results["lead_creation"] = self.test_lead_creation_with_order_value()
-        test_results["lead_retrieval"] = self.test_lead_retrieval_with_order_value()
-        test_results["dashboard_stats"] = self.test_dashboard_stats_with_new_leads()
-        test_results["edge_cases"] = self.test_order_value_edge_cases()
-        test_results["lead_updates"] = self.test_lead_update_with_order_value()
+        # Test authentication first
+        test_results["authentication_flow"] = self.test_authentication_flow()
+        
+        if not test_results["authentication_flow"]:
+            self.log("❌ Authentication failed, skipping other tests", "ERROR")
+            return test_results
+            
+        # Run all other tests
+        test_results["lead_crud_with_order_value"] = self.test_lead_crud_with_order_value()
+        test_results["lead_stage_updates"] = self.test_lead_stage_updates()
+        test_results["dashboard_stats_api"] = self.test_dashboard_stats_api()
+        test_results["activity_logging"] = self.test_activity_logging()
+        
+        # Cleanup
+        self.cleanup_test_data()
         
         # Summary
-        self.log("=" * 70)
-        self.log("🎯 TEST SUMMARY")
-        self.log("=" * 70)
+        self.log("\n" + "="*80)
+        self.log("🎯 PHASE 2 BACKEND TESTING SUMMARY")
+        self.log("="*80)
         
-        passed_tests = sum(test_results.values())
-        total_tests = len(test_results)
+        passed = 0
+        total = len(test_results)
         
         for test_name, result in test_results.items():
-            status = "✅ PASSED" if result else "❌ FAILED"
-            self.log(f"{test_name.replace('_', ' ').title()}: {status}")
+            status = "✅ PASS" if result else "❌ FAIL"
+            self.log(f"{status}: {test_name.replace('_', ' ').title()}")
+            if result:
+                passed += 1
+                
+        self.log(f"\nOverall Result: {passed}/{total} tests passed")
         
-        self.log(f"\nOverall Result: {passed_tests}/{total_tests} tests passed")
-        
-        if passed_tests == total_tests:
-            self.log("🎉 ALL TESTS PASSED - Order value functionality working correctly!")
-            return True
+        if passed == total:
+            self.log("🎉 ALL PHASE 2 BACKEND TESTS PASSED!")
+            self.log("✅ API compatibility confirmed for new features:")
+            self.log("   - Lead CRUD with Order Value Field")
+            self.log("   - Lead Stage Updates for Kanban drag-and-drop")
+            self.log("   - Dashboard Stats API for enhanced tiles")
+            self.log("   - Authentication Flow with JWT")
+            self.log("   - Activity Logging (calls/emails)")
         else:
-            self.log(f"⚠️ {total_tests - passed_tests} test(s) failed - requires attention")
-            return False
+            self.log("⚠️  Some tests failed - check logs above for details")
+            
+        return test_results
 
 if __name__ == "__main__":
-    tester = BackendTester()
-    success = tester.run_all_tests()
-    sys.exit(0 if success else 1)
+    tester = StrikeCRMTester()
+    results = tester.run_all_tests()
+    
+    # Exit with appropriate code
+    all_passed = all(results.values())
+    sys.exit(0 if all_passed else 1)
