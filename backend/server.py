@@ -159,6 +159,26 @@ class Activity(BaseModel):
     user_id: str
     created_at: datetime
 
+class TaskCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    lead_id: Optional[str] = None
+    due_date: Optional[datetime] = None
+    priority: str = "medium"  # high, medium, low
+    status: str = "pending"  # pending, completed, cancelled
+
+class Task(BaseModel):
+    id: str
+    title: str
+    description: Optional[str] = None
+    lead_id: Optional[str] = None
+    due_date: Optional[datetime] = None
+    priority: str
+    status: str
+    user_id: str
+    created_at: datetime
+    completed_at: Optional[datetime] = None
+
 # Auth endpoints
 @api_router.post("/auth/register", response_model=Token)
 async def register(user: UserCreate):
