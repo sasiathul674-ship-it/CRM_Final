@@ -122,7 +122,12 @@ export default function TaskManager({
 
   const handleCreateTask = async () => {
     if (!token || !taskForm.title.trim()) {
-      Alert.alert('Error', 'Please enter a task title');
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please enter a task title',
+        visibilityTime: 3000,
+      });
       return;
     }
 
