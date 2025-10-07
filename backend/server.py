@@ -236,6 +236,140 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         created_at=current_user["created_at"]
     )
 
+# Google OAuth endpoints
+class SessionData(BaseModel):
+    session_token: str
+
+@api_router.post("/auth/oauth/session-data")
+async def process_session(request: Request, response: Response):
+    """Process Emergent OAuth session data"""
+    session_id = request.headers.get("X-Session-ID")
+    if not session_id:
+        raise HTTPException(status_code=400, detail="Session ID required")
+    
+    # Call Emergent auth service
+    async with httpx.AsyncClient() as client:
+        try:
+            auth_response = await client.get(
+                "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
+                headers={"X-Session-ID": session_id}
+            )
+            if auth_response.status_code != 200:
+                raise HTTPException(status_code=401, detail="Invalid session")
+            
+            user_data = auth_response.json()
+        except Exception as e:
+            raise HTTPException(status_code=401, detail="Authentication failed")
+    
+    # Check if user exists, create if not
+    db_user = await db.users.find_one({"email": user_data["email"]})
+    if not db_user:
+        # Create new user from Google data
+        user_doc = {
+            "_id": str(uuid.uuid4()),
+            "email": user_data["email"],
+            "name": user_data["name"],
+            "company": "",  # Can be updated later
+            "hashed_password": None,  # OAuth users don't have passwords
+            "google_id": user_data["id"],
+            "profile_picture": user_data.get("picture", ""),
+            "created_at": datetime.now(timezone.utc)
+        }
+        await db.users.insert_one(user_doc)
+        db_user = user_doc
+    
+    # Store session in database
+    session_doc = {
+        "_id": str(uuid.uuid4()),
+        "user_id": db_user["_id"],
+        "session_token": user_data["session_token"],
+        "expires_at": datetime.now(timezone.utc) + timedelta(days=7),
+        "created_at": datetime.now(timezone.utc)
+    }
+    await db.sessions.insert_one(session_doc)
+    
+    # Set secure cookie
+    response.set_cookie(
+        "session_token",
+        user_data["session_token"],
+        max_age=7 * 24 * 60 * 60,  # 7 days
+        httponly=True,
+        secure=True,
+        samesite="none",
+        path="/"
+    )
+    
+    # Return user data
+    return {
+        "id": db_user["_id"],
+        "email": db_user["email"],
+        "name": db_user["name"],
+        "picture": db_user.get("profile_picture", ""),
+        "session_token": user_data["session_token"]
+    }
+
+@api_router.post("/auth/logout")
+async def logout(request: Request, response: Response):
+    """Logout user by clearing session"""
+    session_token = request.cookies.get("session_token")
+    if session_token:
+        # Delete from database
+        await db.sessions.delete_many({"session_token": session_token})
+    
+    # Clear cookie
+    response.delete_cookie("session_token", path="/", samesite="none", secure=True)
+    return {"success": True}
+
+# Updated auth dependency to check session token
+async def get_current_user_with_session(request: Request):
+    """Get current user from JWT token or session token"""
+    # First try session token from cookie
+    session_token = request.cookies.get("session_token")
+    if session_token:
+        session = await db.sessions.find_one({
+            "session_token": session_token,
+            "expires_at": {"$gt": datetime.now(timezone.utc)}
+        })
+        if session:
+            user = await db.users.find_one({"_id": session["user_id"]})
+            if user:
+                return user
+    
+    # Fallback to JWT token from Authorization header
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    token = auth_header.split(" ")[1]
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    user = await db.users.find_one({"email": email})
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return user
+
 # Lead endpoints
 @api_router.post("/leads", response_model=Lead)
 async def create_lead(lead: LeadCreate, current_user: dict = Depends(get_current_user)):
