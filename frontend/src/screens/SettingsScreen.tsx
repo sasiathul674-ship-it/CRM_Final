@@ -66,7 +66,16 @@ export default function SettingsScreen({ navigation }: any) {
         <View style={styles.section}>
           <TouchableOpacity 
             style={styles.menuItem}
-            onPress={() => Alert.alert('Edit Profile', 'Profile editing functionality coming soon!')}
+            onPress={() => {
+              console.log('Edit Profile pressed!');
+              Toast.show({
+                type: 'info',
+                text1: '👤 Edit Profile',
+                text2: 'Profile editing functionality coming soon!',
+                position: 'top',
+                visibilityTime: 3000,
+              });
+            }}
           >
             <Ionicons name="person-outline" size={20} color="#6B7280" />
             <Text style={styles.menuText}>Edit Profile</Text>
@@ -75,7 +84,17 @@ export default function SettingsScreen({ navigation }: any) {
 
           <TouchableOpacity 
             style={styles.menuItem}
-            onPress={() => Alert.alert('Business Card', 'Navigate to Business Card tab to manage your card settings.')}
+            onPress={() => {
+              console.log('Business Card pressed!');
+              navigation.navigate('Card');
+              Toast.show({
+                type: 'success',
+                text1: '💳 Business Card',
+                text2: 'Redirecting to Business Card section...',
+                position: 'bottom',
+                visibilityTime: 2000,
+              });
+            }}
           >
             <Ionicons name="card-outline" size={20} color="#6B7280" />
             <Text style={styles.menuText}>Business Card Settings</Text>
@@ -84,7 +103,16 @@ export default function SettingsScreen({ navigation }: any) {
 
           <TouchableOpacity 
             style={styles.menuItem}
-            onPress={() => Alert.alert('Export Data', 'Data export functionality will be available soon. You can export leads, tasks, and activities in CSV format.')}
+            onPress={() => {
+              console.log('Export Data pressed!');
+              Toast.show({
+                type: 'info',
+                text1: '📊 Export Data',
+                text2: 'CSV export for leads, tasks, and activities will be available soon.',
+                position: 'top',
+                visibilityTime: 4000,
+              });
+            }}
           >
             <Ionicons name="download-outline" size={20} color="#6B7280" />
             <Text style={styles.menuText}>Export Data</Text>
