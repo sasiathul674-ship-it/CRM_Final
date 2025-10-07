@@ -43,6 +43,16 @@ const getPriorityColor = (priority: string) => {
   }
 };
 
+const getCurrencySymbol = (currency?: string) => {
+  switch (currency) {
+    case 'INR': return '₹';
+    case 'USD': return '$';
+    case 'GBP': return '£';
+    case 'EUR': return '€';
+    default: return '₹'; // Default to Rupees
+  }
+};
+
 const formatLastInteraction = (dateString?: string) => {
   if (!dateString) return 'No contact yet';
   try {
