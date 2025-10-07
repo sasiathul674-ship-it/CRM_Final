@@ -57,8 +57,23 @@ export default function RegisterScreen({ navigation }: any) {
       company.trim() || undefined
     );
     
-    if (!success) {
+    if (success) {
+      // Show success toast
+      Toast.show({
+        type: 'success',
+        text1: '🎉 Signup Completed!',
+        text2: 'Welcome to Strike CRM! Your account has been created successfully.',
+        position: 'top',
+        visibilityTime: 4000,
+      });
+    } else {
       setPassword(''); // Clear password on failed registration
+      Toast.show({
+        type: 'error',
+        text1: '❌ Signup Failed',
+        text2: 'Please check your details and try again.',
+        position: 'top',
+      });
     }
   };
 
