@@ -71,22 +71,33 @@ export default function TaskManager({
   }, [leadId, showOnlyPending]);
 
   const fetchTasks = async () => {
-    if (!token) return;
+    if (!token) {
+      console.log('🔑 TaskManager: No token available');
+      return;
+    }
     
     try {
+      console.log('📋 TaskManager: Fetching tasks...', { leadId, showOnlyPending });
+      
       let tasksData: Task[];
       if (leadId) {
+        console.log('📋 TaskManager: Fetching tasks for lead:', leadId);
         tasksData = await apiService.getLeadTasks(token, leadId);
       } else {
         const status = showOnlyPending ? 'pending' : undefined;
+        console.log('📋 TaskManager: Fetching all tasks with status:', status);
         tasksData = await apiService.getAllTasks(token, status);
       }
       
+      console.log('📋 TaskManager: Raw tasks data:', tasksData);
+      
       // Filter and sort tasks
-      let filteredTasks = tasksData;
+      let filteredTasks = tasksData || [];
       if (showOnlyPending) {
-        filteredTasks = tasksData.filter(task => task.status === 'pending');
+        filteredTasks = filteredTasks.filter(task => task.status === 'pending');
       }
+      
+      console.log('📋 TaskManager: Filtered tasks:', filteredTasks);
       
       // Sort by priority and due date
       filteredTasks.sort((a, b) => {
@@ -112,9 +123,16 @@ export default function TaskManager({
         filteredTasks = filteredTasks.slice(0, maxItems);
       }
       
+      console.log('📋 TaskManager: Final tasks to display:', filteredTasks);
       setTasks(filteredTasks);
     } catch (error) {
-      console.error('Error fetching tasks:', error);
+      console.error('📋 TaskManager Error:', error);
+      Toast.show({
+        type: 'error',
+        text1: '❌ Failed to load tasks',
+        text2: 'Please check your connection',
+        position: 'bottom',
+      });
     } finally {
       setLoading(false);
     }
