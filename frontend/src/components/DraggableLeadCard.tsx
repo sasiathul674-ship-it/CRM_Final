@@ -192,10 +192,23 @@ export default function DraggableLeadCard({
           <View style={styles.header}>
             <View style={styles.nameSection}>
               <Text style={styles.name} numberOfLines={1}>{lead.name}</Text>
-              <View style={styles.priorityContainer}>
-                <View style={[styles.priorityDot, { backgroundColor: getPriorityColor(lead.priority) }]} />
+              {lead.company && <Text style={styles.company} numberOfLines={1}>{lead.company}</Text>}
+            </View>
+            
+            <View style={styles.rightSection}>
+              {/* Order Value - RIGHT SIDE as requested */}
+              {lead.order_value && (
+                <View style={styles.orderValueContainer}>
+                  <Ionicons name="cash-outline" size={12} color="#059669" />
+                  <Text style={styles.orderValueText}>
+                    {getCurrencySymbol(lead.currency)}{lead.order_value.toLocaleString()}
+                  </Text>
+                </View>
+              )}
+              
+              <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor(lead.priority) + '20' }]}>
                 <Text style={[styles.priorityText, { color: getPriorityColor(lead.priority) }]}>
-                  {lead.priority.toUpperCase()}
+                  {lead.priority?.toUpperCase()}
                 </Text>
               </View>
             </View>
