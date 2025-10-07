@@ -186,15 +186,32 @@ export default function DashboardScreen({ navigation }: any) {
             <Text style={styles.greeting}>Good morning, {user?.name?.split(' ')[0]}!</Text>
             <Text style={styles.subtitle}>Here's your business overview</Text>
           </View>
-          <TouchableOpacity 
-            style={styles.notificationButton}
-            onPress={() => Alert.alert('Notifications', 'You have 3 new notifications:\n• New lead: John Smith\n• Task overdue: Call Maria\n• Lead moved to Negotiation')}
-          >
-            <Ionicons name="notifications-outline" size={24} color="#374151" />
-            <View style={styles.notificationBadge}>
-              <Text style={styles.notificationCount}>3</Text>
-            </View>
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity 
+              style={styles.refreshButton}
+              onPress={() => {
+                onRefresh();
+                Toast.show({
+                  type: 'success',
+                  text1: '🔄 Dashboard Refreshed',
+                  text2: 'Latest data loaded successfully',
+                  position: 'bottom',
+                  visibilityTime: 2000,
+                });
+              }}
+            >
+              <Ionicons name="refresh-outline" size={22} color="#4F46E5" />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.notificationButton}
+              onPress={() => Alert.alert('Notifications', 'You have 3 new notifications:\n• New lead: John Smith\n• Task overdue: Call Maria\n• Lead moved to Negotiation')}
+            >
+              <Ionicons name="notifications-outline" size={24} color="#374151" />
+              <View style={styles.notificationBadge}>
+                <Text style={styles.notificationCount}>3</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
