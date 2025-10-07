@@ -303,103 +303,96 @@ class StrikeCRMTester:
         except Exception as e:
             self.log(f"❌ Dashboard stats test failed: {e}", "ERROR")
             return False
-    
-    def test_order_value_edge_cases(self):
-        """Test edge cases for order_value field"""
-        self.log("Testing order_value edge cases...")
-        
-        edge_cases = [
-            {
-                "name": "Zero Value Lead",
-                "company": "Free Trial Co",
-                "email": "trial@freetrial.com",
-                "order_value": 0.0,
-                "priority": "low"
-            },
-            {
-                "name": "No Order Value Lead", 
-                "company": "Unknown Value Corp",
-                "email": "unknown@corp.com",
-                "priority": "medium"
-                # No order_value field - should default to None
-            },
-            {
-                "name": "Large Order Value Lead",
-                "company": "Enterprise Mega Corp",
-                "email": "enterprise@megacorp.com", 
-                "order_value": 999999.99,
-                "priority": "high"
-            }
-        ]
-        
-        success_count = 0
-        
-        for i, lead_data in enumerate(edge_cases, 1):
-            try:
-                self.log(f"Testing edge case {i}/3: {lead_data['name']}")
-                
-                response = self.session.post(f"{BACKEND_URL}/leads", json=lead_data)
-                
-                if response.status_code == 200:
-                    created_lead = response.json()
-                    expected_value = lead_data.get("order_value")
-                    actual_value = created_lead.get("order_value")
-                    
-                    if expected_value == actual_value:
-                        self.log(f"✅ Edge case handled correctly: order_value = {actual_value}")
-                        success_count += 1
-                    else:
-                        self.log(f"❌ Edge case failed. Expected: {expected_value}, Got: {actual_value}", "ERROR")
-                else:
-                    self.log(f"❌ Edge case creation failed: {response.status_code} - {response.text}", "ERROR")
-                    
-            except Exception as e:
-                self.log(f"❌ Edge case error: {str(e)}", "ERROR")
-        
-        self.log(f"Edge case testing completed: {success_count}/3 successful")
-        return success_count == 3
-    
-    def test_lead_update_with_order_value(self):
-        """Test updating leads with order_value changes"""
-        if not self.created_leads:
-            self.log("❌ No leads available for update testing", "ERROR")
-            return False
             
-        self.log("Testing lead updates with order_value changes...")
+    def test_activity_logging(self) -> bool:
+        """Test call/email activity creation and retrieval"""
+        self.log("📞 Testing Activity Logging")
         
         try:
-            # Update the first created lead
-            lead_to_update = self.created_leads[0]
-            original_value = lead_to_update["order_value"]
-            new_value = original_value + 5000.00 if original_value else 10000.00
-            
-            update_data = {
-                "name": lead_to_update["name"],
-                "company": lead_to_update["company"],
-                "phone": lead_to_update.get("phone"),
-                "email": lead_to_update.get("email"),
-                "priority": lead_to_update["priority"],
-                "order_value": new_value,
-                "notes": f"Updated order value from ${original_value} to ${new_value}"
-            }
-            
-            response = self.session.put(f"{BACKEND_URL}/leads/{lead_to_update['id']}", json=update_data)
-            
-            if response.status_code == 200:
-                updated_lead = response.json()
-                if updated_lead["order_value"] == new_value:
-                    self.log(f"✅ Lead update successful: order_value changed from ${original_value} to ${new_value}")
-                    return True
-                else:
-                    self.log(f"❌ Order value not updated correctly. Expected: ${new_value}, Got: ${updated_lead['order_value']}", "ERROR")
-                    return False
-            else:
-                self.log(f"❌ Lead update failed: {response.status_code} - {response.text}", "ERROR")
+            if not self.created_leads:
+                self.log("❌ No test leads available for activity testing", "ERROR")
                 return False
                 
+            lead_id = self.created_leads[0]["id"]
+            
+            # Test creating call activity
+            call_activity = {
+                "lead_id": lead_id,
+                "activity_type": "call",
+                "content": "Discussed project requirements and timeline",
+                "outcome": "answered",
+                "duration": 15
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/activities", json=call_activity)
+            if response.status_code != 200:
+                self.log(f"❌ Call activity creation failed: {response.status_code} - {response.text}", "ERROR")
+                return False
+                
+            call_result = response.json()
+            self.created_activities.append(call_result["id"])
+            self.log(f"✅ Call activity created: {call_result['content'][:50]}...")
+            
+            # Test creating email activity
+            email_activity = {
+                "lead_id": lead_id,
+                "activity_type": "email",
+                "content": "Sent project proposal and pricing information",
+                "outcome": None,
+                "duration": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/activities", json=email_activity)
+            if response.status_code != 200:
+                self.log(f"❌ Email activity creation failed: {response.status_code} - {response.text}", "ERROR")
+                return False
+                
+            email_result = response.json()
+            self.created_activities.append(email_result["id"])
+            self.log(f"✅ Email activity created: {email_result['content'][:50]}...")
+            
+            # Test retrieving lead activities
+            response = self.session.get(f"{BACKEND_URL}/leads/{lead_id}/activities")
+            if response.status_code != 200:
+                self.log(f"❌ Get lead activities failed: {response.status_code}", "ERROR")
+                return False
+                
+            activities = response.json()
+            if len(activities) < 2:
+                self.log(f"❌ Expected at least 2 activities, got {len(activities)}", "ERROR")
+                return False
+                
+            self.log(f"✅ Retrieved {len(activities)} activities for lead")
+            
+            # Verify activity structure
+            for activity in activities:
+                required_fields = ["id", "lead_id", "activity_type", "content", "user_id", "created_at"]
+                for field in required_fields:
+                    if field not in activity:
+                        self.log(f"❌ Missing field {field} in activity", "ERROR")
+                        return False
+                        
+            self.log("✅ Activity structure validation passed")
+            
+            return True
+            
         except Exception as e:
-            self.log(f"❌ Lead update error: {str(e)}", "ERROR")
+            self.log(f"❌ Activity logging test failed: {e}", "ERROR")
             return False
+            
+    def cleanup_test_data(self):
+        """Clean up test data created during testing"""
+        self.log("🧹 Cleaning up test data")
+        
+        try:
+            # Delete test leads
+            for lead in self.created_leads:
+                response = self.session.delete(f"{BACKEND_URL}/leads/{lead['id']}")
+                if response.status_code == 200:
+                    self.log(f"✅ Deleted lead: {lead['name']}")
+                    
+        except Exception as e:
+            self.log(f"❌ Cleanup failed: {e}", "ERROR")
     
     def run_all_tests(self):
         """Run all backend tests for order_value functionality"""
