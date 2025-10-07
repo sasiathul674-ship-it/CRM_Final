@@ -629,6 +629,7 @@ class StrikeCRMTester:
         test_results["lead_stage_updates"] = self.test_lead_stage_updates()
         test_results["dashboard_stats_api"] = self.test_dashboard_stats_api()
         test_results["activity_logging"] = self.test_activity_logging()
+        test_results["task_management_apis"] = self.test_task_management_apis()
         
         # Cleanup
         self.cleanup_test_data()
