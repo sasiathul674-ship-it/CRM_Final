@@ -46,7 +46,11 @@ export default function LeadsScreen({ navigation }: any) {
   });
 
   const handleAddLead = () => {
-    navigation.navigate('AddLead');
+    navigation.navigate('AddLead', { 
+      onLeadAdded: () => {
+        fetchLeads(); // Refresh leads when returning
+      }
+    });
   };
 
   const handleLeadPress = (lead: any) => {
