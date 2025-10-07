@@ -43,7 +43,8 @@ const getPriorityColor = (priority: string) => {
   }
 };
 
-export default function AddLeadScreen({ navigation }: any) {
+export default function AddLeadScreen({ navigation, route }: any) {
+  const { onLeadAdded } = route.params || {};
   const [name, setName] = useState('');
   const [company, setCompany] = useState('');
   const [phone, setPhone] = useState('');
