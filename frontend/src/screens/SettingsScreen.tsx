@@ -10,22 +10,37 @@ export default function SettingsScreen() {
 
   const handleLogout = () => {
     console.log('Logout button pressed!'); // Debug log
-    Toast.show({
-      type: 'info',
-      text1: 'Logout Confirmation',
-      text2: 'Are you sure you want to logout?',
-      position: 'top',
-      visibilityTime: 4000,
-      onPress: () => {
-        logout();
-        Toast.show({
-          type: 'success',
-          text1: '✅ Logged Out',
-          text2: 'You have been successfully logged out',
-          position: 'top',
-        });
-      }
-    });
+    Alert.alert(
+      '🚪 Logout Confirmation',
+      'Are you sure you want to logout from Strike CRM?',
+      [
+        {
+          text: 'No',
+          style: 'cancel',
+          onPress: () => {
+            Toast.show({
+              type: 'info',
+              text1: '↩️ Logout Cancelled',
+              text2: 'You remain logged in',
+              position: 'bottom',
+            });
+          }
+        },
+        {
+          text: 'Yes',
+          style: 'destructive',
+          onPress: () => {
+            logout();
+            Toast.show({
+              type: 'success',
+              text1: '✅ Logged Out Successfully',
+              text2: 'You have been logged out of Strike CRM',
+              position: 'top',
+            });
+          }
+        }
+      ]
+    );
   };
 
   return (
