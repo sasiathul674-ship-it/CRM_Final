@@ -29,8 +29,9 @@ const STAGES = [
   { 
     id: 'New Leads', 
     name: 'New Leads', 
-    color: '#4F46E5', 
-    bgColor: '#EFF6FF',
+    color: '#3B82F6', 
+    bgColor: '#F0F9FF',
+    gradientColors: ['#3B82F6', '#1D4ED8'],
     icon: 'person-add-outline',
     description: 'Fresh prospects to contact'
   },
@@ -39,14 +40,16 @@ const STAGES = [
     name: 'Contacted', 
     color: '#F59E0B', 
     bgColor: '#FFFBEB',
+    gradientColors: ['#F59E0B', '#D97706'],
     icon: 'call-outline',
     description: 'Initial contact made'
   },
   { 
     id: 'Follow-up', 
     name: 'Follow-up', 
-    color: '#F97316', 
-    bgColor: '#FFF7ED',
+    color: '#EF4444', 
+    bgColor: '#FEF2F2',
+    gradientColors: ['#EF4444', '#DC2626'],
     icon: 'time-outline',
     description: 'Awaiting response'
   },
@@ -54,7 +57,8 @@ const STAGES = [
     id: 'Negotiation', 
     name: 'Negotiation', 
     color: '#8B5CF6', 
-    bgColor: '#F3E8FF',
+    bgColor: '#FAF5FF',
+    gradientColors: ['#8B5CF6', '#7C3AED'],
     icon: 'chatbubbles-outline',
     description: 'Discussing terms'
   },
@@ -63,6 +67,7 @@ const STAGES = [
     name: 'Closed', 
     color: '#10B981', 
     bgColor: '#ECFDF5',
+    gradientColors: ['#10B981', '#059669'],
     icon: 'checkmark-circle-outline',
     description: 'Deal completed'
   },
