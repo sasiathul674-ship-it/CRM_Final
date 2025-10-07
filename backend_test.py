@@ -28,34 +28,71 @@ class StrikeCRMTester:
         self.created_leads = []
         self.created_activities = []
         
-    def log(self, message, level="INFO"):
+    def log(self, message: str, level: str = "INFO"):
+        """Log test messages with timestamp"""
         timestamp = datetime.now().strftime("%H:%M:%S")
         print(f"[{timestamp}] {level}: {message}")
         
-    def register_test_user(self):
-        """Register a test user for authentication"""
-        self.log("Registering test user...")
-        
-        user_data = {
-            "email": self.test_user_email,
-            "password": self.test_user_password,
-            "name": "Strike Test User",
-            "company": "Strike CRM Testing Inc"
-        }
+    def test_authentication_flow(self) -> bool:
+        """Test complete authentication flow including JWT validation"""
+        self.log("🔐 Testing Authentication Flow")
         
         try:
+            # Test user registration
+            user_data = {
+                "email": self.test_user_email,
+                "password": self.test_user_password,
+                "name": "Strike Test User",
+                "company": "Strike CRM Testing Inc"
+            }
+            
             response = self.session.post(f"{BACKEND_URL}/auth/register", json=user_data)
-            if response.status_code == 200:
-                data = response.json()
-                self.auth_token = data["access_token"]
-                self.session.headers.update({"Authorization": f"Bearer {self.auth_token}"})
-                self.log("✅ User registration successful")
-                return True
-            else:
-                self.log(f"❌ User registration failed: {response.status_code} - {response.text}", "ERROR")
+            
+            if response.status_code == 400 and "already registered" in response.text:
+                self.log("User already exists, testing login instead")
+                
+                # Test login
+                login_data = {
+                    "email": self.test_user_email,
+                    "password": self.test_user_password
+                }
+                
+                response = self.session.post(f"{BACKEND_URL}/auth/login", json=login_data)
+                
+            if response.status_code != 200:
+                self.log(f"❌ Auth failed: {response.status_code} - {response.text}", "ERROR")
                 return False
+                
+            auth_data = response.json()
+            self.auth_token = auth_data["access_token"]
+            self.session.headers.update({"Authorization": f"Bearer {self.auth_token}"})
+            self.log("✅ Authentication successful, token obtained")
+            
+            # Test /auth/me endpoint
+            response = self.session.get(f"{BACKEND_URL}/auth/me")
+            if response.status_code != 200:
+                self.log(f"❌ Auth/me failed: {response.status_code}", "ERROR")
+                return False
+                
+            user_data = response.json()
+            self.log(f"✅ User profile retrieved: {user_data['name']}")
+            
+            # Test protected endpoint without token
+            temp_headers = self.session.headers.copy()
+            del self.session.headers["Authorization"]
+            
+            response = self.session.get(f"{BACKEND_URL}/leads")
+            if response.status_code != 401:
+                self.log(f"❌ Protected endpoint should return 401, got {response.status_code}", "ERROR")
+                return False
+                
+            self.session.headers = temp_headers
+            self.log("✅ Protected endpoints properly secured")
+            
+            return True
+            
         except Exception as e:
-            self.log(f"❌ User registration error: {str(e)}", "ERROR")
+            self.log(f"❌ Authentication test failed: {e}", "ERROR")
             return False
     
     def test_lead_creation_with_order_value(self):
