@@ -15,6 +15,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { useLeads } from '../hooks/useLeads';
 import DraggableKanbanBoard from '../components/DraggableKanbanBoard';
+import ContactListView from '../components/ContactListView';
 import LoadingScreen from '../components/LoadingScreen';
 
 export default function LeadsScreen({ navigation }: any) {
