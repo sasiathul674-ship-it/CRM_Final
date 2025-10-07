@@ -42,7 +42,10 @@ export default function LeadsScreen({ navigation }: any) {
   };
 
   const handleLeadPress = (lead: any) => {
-    navigation.navigate('LeadDetail', { lead });
+    navigation.navigate('LeadDetail', { 
+      leadId: lead.id, 
+      lead: lead 
+    });
   };
 
   if (loading && leads.length === 0) {
