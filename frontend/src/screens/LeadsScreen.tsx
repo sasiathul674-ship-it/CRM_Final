@@ -235,8 +235,16 @@ export default function LeadsScreen({ navigation }: any) {
               </TouchableOpacity>
             )}
           </ScrollView>
-        ) : (
+        ) : viewMode === 'kanban' ? (
           <DraggableKanbanBoard 
+            leads={filteredLeads}
+            onLeadPress={handleLeadPress}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          />
+        ) : (
+          <ContactListView
             leads={filteredLeads}
             onLeadPress={handleLeadPress}
             refreshControl={
