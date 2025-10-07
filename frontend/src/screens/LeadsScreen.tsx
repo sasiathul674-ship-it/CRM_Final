@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { useLeads } from '../hooks/useLeads';
 import DraggableKanbanBoard from '../components/DraggableKanbanBoard';
 import LoadingScreen from '../components/LoadingScreen';
