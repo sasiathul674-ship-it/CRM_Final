@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   },
   rightSection: {
     alignItems: 'flex-end',
-    gap: 8,
+    gap: 4,
   },
   name: {
     fontSize: 16,
