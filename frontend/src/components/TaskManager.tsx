@@ -169,9 +169,24 @@ export default function TaskManager({
           ? Haptics.NotificationFeedbackType.Success 
           : Haptics.NotificationFeedbackType.Warning
       );
+      
+      // Show toast notification
+      Toast.show({
+        type: status === 'completed' ? 'success' : 'info',
+        text1: status === 'completed' ? '✅ Task Completed!' : '❌ Task Cancelled',
+        text2: status === 'completed' ? 'Great job! Task marked as done.' : 'Task has been cancelled.',
+        position: 'bottom',
+        visibilityTime: 3000,
+      });
+      
       onTaskUpdate?.();
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to update task');
+      Toast.show({
+        type: 'error',
+        text1: '❌ Error',
+        text2: error.message || 'Failed to update task',
+        position: 'bottom',
+      });
     }
   };
 
