@@ -153,6 +153,13 @@ export default function TaskManager({
         due_date: ''
       });
       
+      Toast.show({
+        type: 'success',
+        text1: '✅ Task Created!',
+        text2: `${taskData.title} has been added to your tasks.`,
+        visibilityTime: 3000,
+      });
+      
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       onTaskUpdate?.();
     } catch (error: any) {
