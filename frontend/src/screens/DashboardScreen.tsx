@@ -174,10 +174,13 @@ export default function DashboardScreen({ navigation }: any) {
             <Text style={styles.greeting}>Good morning, {user?.name?.split(' ')[0]}!</Text>
             <Text style={styles.subtitle}>Here's your business overview</Text>
           </View>
-          <TouchableOpacity style={styles.notificationButton}>
+          <TouchableOpacity 
+            style={styles.notificationButton}
+            onPress={() => Alert.alert('Notifications', 'You have 3 new notifications:\n• New lead: John Smith\n• Task overdue: Call Maria\n• Lead moved to Negotiation')}
+          >
             <Ionicons name="notifications-outline" size={24} color="#374151" />
             <View style={styles.notificationBadge}>
-              <Text style={styles.notificationCount}>3</Text>
+              <Text style={styles.notificationCount">3</Text>
             </View>
           </TouchableOpacity>
         </View>
