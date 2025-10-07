@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,12 +8,19 @@ import {
   TextInput,
   Alert,
   Modal,
+  Linking,
+  Dimensions,
+  Share,
+  Clipboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import QRCode from 'react-native-qrcode-svg';
 import { useAuth } from '../contexts/AuthContext';
 import Constants from 'expo-constants';
+import * as Haptics from 'expo-haptics';
+
+const { width, height } = Dimensions.get('window');
 
 interface BusinessCard {
   id: string;
