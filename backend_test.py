@@ -1,21 +1,28 @@
 #!/usr/bin/env python3
 """
-Strike CRM Backend API Testing Suite
-Tests all backend APIs for authentication, lead management, business cards, activities, and dashboard.
+Enhanced Dashboard Backend Testing Suite
+Tests the enhanced dashboard functionality including tiles, filtering, and data grouping
 """
 
 import requests
 import json
 import uuid
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
 import sys
+import os
+from dotenv import load_dotenv
 
-# Configuration
-BASE_URL = "https://bizcard-crm.preview.emergentagent.com/api"
-TEST_USER_EMAIL = f"test.user.{uuid.uuid4().hex[:8]}@strikecrm.com"
-TEST_USER_PASSWORD = "SecurePass123!"
-TEST_USER_NAME = "John Smith"
-TEST_USER_COMPANY = "Strike CRM Solutions"
+# Load environment variables
+load_dotenv('/app/frontend/.env')
+
+# Get backend URL from environment
+BACKEND_URL = os.getenv('EXPO_PUBLIC_BACKEND_URL', 'https://bizcard-crm.preview.emergentagent.com')
+BASE_URL = f"{BACKEND_URL}/api"
+TEST_USER_EMAIL = f"dashboard.tester.{uuid.uuid4().hex[:8]}@strikecrm.com"
+TEST_USER_PASSWORD = "DashboardTest2024!"
+TEST_USER_NAME = "Dashboard Tester"
+TEST_USER_COMPANY = "Strike CRM Testing"
 
 class StrikeCRMTester:
     def __init__(self):
