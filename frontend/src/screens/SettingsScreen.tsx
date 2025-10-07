@@ -9,38 +9,55 @@ export default function SettingsScreen({ navigation }: any) {
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
-    console.log('Logout button pressed!'); // Debug log
-    Alert.alert(
-      '🚪 Logout Confirmation',
-      'Are you sure you want to logout from Strike CRM?',
-      [
-        {
-          text: 'No',
-          style: 'cancel',
-          onPress: () => {
-            Toast.show({
-              type: 'info',
-              text1: '↩️ Logout Cancelled',
-              text2: 'You remain logged in',
-              position: 'bottom',
-            });
-          }
-        },
-        {
-          text: 'Yes',
-          style: 'destructive',
-          onPress: () => {
-            logout();
-            Toast.show({
-              type: 'success',
-              text1: '✅ Logged Out Successfully',
-              text2: 'You have been logged out of Strike CRM',
-              position: 'top',
-            });
-          }
-        }
-      ]
-    );
+    console.log('🚪 Logout button pressed!'); // Debug log
+    
+    // First show toast asking for confirmation
+    Toast.show({
+      type: 'info',
+      text1: '🚪 Logout Confirmation',
+      text2: 'Tap here to confirm logout',
+      position: 'top',
+      visibilityTime: 0, // Stay visible until dismissed
+      autoHide: false,
+      onPress: () => {
+        // When user taps the toast, show Alert for final confirmation
+        Toast.hide();
+        Alert.alert(
+          '🚪 Confirm Logout',
+          'Are you sure you want to logout from Strike CRM?',
+          [
+            {
+              text: 'Cancel',
+              style: 'cancel',
+              onPress: () => {
+                Toast.show({
+                  type: 'info',
+                  text1: '↩️ Logout Cancelled',
+                  text2: 'You remain logged in',
+                  position: 'bottom',
+                  visibilityTime: 2000,
+                });
+              }
+            },
+            {
+              text: 'Logout',
+              style: 'destructive',
+              onPress: () => {
+                console.log('🚪 User confirmed logout');
+                logout();
+                Toast.show({
+                  type: 'success',
+                  text1: '✅ Logged Out Successfully',
+                  text2: 'You have been logged out of Strike CRM',
+                  position: 'top',
+                  visibilityTime: 3000,
+                });
+              }
+            }
+          ]
+        );
+      }
+    });
   };
 
   return (
