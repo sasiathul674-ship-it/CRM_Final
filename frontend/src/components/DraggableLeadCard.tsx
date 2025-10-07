@@ -23,6 +23,8 @@ interface Lead {
   priority: string;
   last_interaction?: string;
   created_at: string;
+  order_value?: number;
+  currency?: string;
 }
 
 interface DraggableLeadCardProps {
