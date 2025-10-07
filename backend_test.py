@@ -1,28 +1,17 @@
 #!/usr/bin/env python3
 """
-Enhanced Dashboard Backend Testing Suite
-Tests the enhanced dashboard functionality including tiles, filtering, and data grouping
+Backend Testing Suite for Strike CRM - Order Value Field Testing
+Tests lead creation with new order_value field and notification functionality
 """
 
 import requests
 import json
-import uuid
-import time
-from datetime import datetime, timedelta
 import sys
-import os
-from dotenv import load_dotenv
+from datetime import datetime
+import uuid
 
-# Load environment variables
-load_dotenv('/app/frontend/.env')
-
-# Get backend URL from environment
-BACKEND_URL = os.getenv('EXPO_PUBLIC_BACKEND_URL', 'https://bizcard-crm.preview.emergentagent.com')
-BASE_URL = f"{BACKEND_URL}/api"
-TEST_USER_EMAIL = f"dashboard.tester.{uuid.uuid4().hex[:8]}@strikecrm.com"
-TEST_USER_PASSWORD = "DashboardTest2024!"
-TEST_USER_NAME = "Dashboard Tester"
-TEST_USER_COMPANY = "Strike CRM Testing"
+# Backend URL from environment
+BACKEND_URL = "https://bizcard-crm.preview.emergentagent.com/api"
 
 class DashboardTester:
     def __init__(self):
