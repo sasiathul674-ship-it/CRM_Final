@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/api';
+import Toast from 'react-native-toast-message';
 
 const LEAD_SOURCES = ['Website', 'Referral', 'Cold Call', 'Social Media', 'Email Campaign', 'Other'];
 const PRIORITIES = ['low', 'medium', 'high'];
