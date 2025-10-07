@@ -181,7 +181,6 @@ ${card.website ? `URL:${card.website}
         return {
           backgroundColor: '#FFFFFF',
           textColor: '#1F2937',
-          accentColor: '#F3F4F6',
           borderColor: '#E5E7EB',
         };
       default:
@@ -190,6 +189,105 @@ ${card.website ? `URL:${card.website}
           textColor: '#FFFFFF',
           accentColor: '#EEF2FF',
         };
+    }
+  };
+
+  const getBusinessCardURL = () => {
+    if (!businessCard) return '';
+    return `https://strikecrm.app/card/${businessCard.id}`;
+  };
+
+  const handleCopyLink = async () => {
+    const url = getBusinessCardURL();
+    try {
+      await Clipboard.setString(url);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert('Success', 'Business card link copied to clipboard!');
+      trackShare('copy_link');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to copy link');
+    }
+  };
+
+  const handleWhatsAppShare = async () => {
+    const url = getBusinessCardURL();
+    const message = `Check out my business card: ${url}`;
+    const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(message)}`;
+    
+    try {
+      const supported = await Linking.canOpenURL(whatsappUrl);
+      if (supported) {
+        await Linking.openURL(whatsappUrl);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        trackShare('whatsapp');
+      } else {
+        Alert.alert('WhatsApp not installed', 'Please install WhatsApp to share via WhatsApp');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to share via WhatsApp');
+    }
+  };
+
+  const handleSMSShare = async () => {
+    const url = getBusinessCardURL();
+    const message = `Check out my business card: ${url}`;
+    const smsUrl = `sms:?body=${encodeURIComponent(message)}`;
+    
+    try {
+      await Linking.openURL(smsUrl);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      trackShare('sms');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to open SMS');
+    }
+  };
+
+  const handleNativeShare = async () => {
+    const url = getBusinessCardURL();
+    try {
+      const result = await Share.share({
+        message: `Check out my business card: ${url}`,
+        url: url,
+        title: 'My Business Card'
+      });
+      
+      if (result.action === Share.sharedAction) {
+        trackShare('native_share');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to share');
+    }
+  };
+
+  const trackShare = async (shareType: string) => {
+    if (!token || !businessCard) return;
+    
+    try {
+      // Update local analytics
+      setShareAnalytics(prev => ({
+        ...prev,
+        total_shares: prev.total_shares + 1,
+        last_shared: new Date().toISOString()
+      }));
+      
+      // Track on backend (mock implementation)
+      const response = await fetch(`${API_BASE_URL}/api/business-card/analytics`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          share_type: shareType,
+          timestamp: new Date().toISOString()
+        })
+      });
+      
+      if (response.ok) {
+        console.log(`Tracked ${shareType} share successfully`);
+      }
+    } catch (error) {
+      console.error('Failed to track share:', error);
     }
   };
 
