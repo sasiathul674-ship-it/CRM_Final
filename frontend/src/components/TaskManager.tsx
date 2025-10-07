@@ -474,6 +474,18 @@ export default function TaskManager({
       )}
       
       {renderCreateModal()}
+      
+      {/* Date Picker for Due Date */}
+      <DatePickerComponent
+        visible={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        onSelectDate={(date) => {
+          setTaskForm({...taskForm, due_date: date});
+        }}
+        mode="single"
+        title="Select Due Date"
+        minDate={new Date().toISOString().split('T')[0]} // Can't select past dates
+      />
     </View>
   );
 }
