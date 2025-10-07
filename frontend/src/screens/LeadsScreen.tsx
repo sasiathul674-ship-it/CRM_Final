@@ -84,8 +84,29 @@ export default function LeadsScreen({ navigation }: any) {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.titleContainer}>
-          <Text style={styles.title}>Leads Pipeline</Text>
+          <Text style={styles.title}>Pipeline</Text>
           <Text style={styles.subtitle}>{filteredLeads.length} of {leads.length} leads</Text>
+        </View>
+        <View style={styles.headerActions}>
+          <TouchableOpacity 
+            style={styles.refreshButton} 
+            onPress={() => {
+              fetchLeads();
+              Toast.show({
+                type: 'success',
+                text1: '🔄 Pipeline Refreshed',
+                text2: 'Latest leads loaded successfully',
+                position: 'bottom',
+                visibilityTime: 2000,
+              });
+            }}
+          >
+            <Ionicons name="refresh-outline" size={18} color="#4F46E5" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.headerButton} onPress={handleAddLead}>
+            <Ionicons name="add" size={20} color="#4F46E5" />
+            <Text style={styles.headerButtonText}>Add Lead</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
