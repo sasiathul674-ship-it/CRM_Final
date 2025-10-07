@@ -305,6 +305,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
+  viewToggleButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#F1F5F9',
+    marginRight: 8,
+  },
   refreshButton: {
     padding: 8,
     borderRadius: 8,
