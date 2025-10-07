@@ -120,16 +120,18 @@ export default function OnboardingScreen({ navigation }: any) {
   };
 
   const completeOnboarding = () => {
-    Alert.alert(
-      '🎉 Welcome to Strike!',
-      'Your CRM is ready! Start managing leads like a pro.',
-      [
-        {
-          text: 'Get Started',
-          onPress: () => navigation.replace('App'),
-        },
-      ]
-    );
+    // Show success toast
+    Toast.show({
+      type: 'success',
+      text1: '🚀 Welcome to Strike CRM!',
+      text2: 'Your workspace is ready! Let\'s start managing leads.',
+      position: 'top',
+      visibilityTime: 3000,
+    });
+    
+    // Complete onboarding and navigate to app
+    completeOnboardingAuth();
+    navigation.replace('App');
   };
 
   const getStepContent = () => {
