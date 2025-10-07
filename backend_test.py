@@ -24,14 +24,13 @@ TEST_USER_PASSWORD = "DashboardTest2024!"
 TEST_USER_NAME = "Dashboard Tester"
 TEST_USER_COMPANY = "Strike CRM Testing"
 
-class StrikeCRMTester:
+class DashboardTester:
     def __init__(self):
         self.base_url = BASE_URL
         self.auth_token = None
         self.test_user_id = None
-        self.test_lead_id = None
-        self.test_activity_id = None
-        self.test_business_card_id = None
+        self.test_leads = []
+        self.test_activities = []
         self.results = {
             "passed": 0,
             "failed": 0,
