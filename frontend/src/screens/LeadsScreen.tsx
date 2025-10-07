@@ -98,6 +98,25 @@ export default function LeadsScreen({ navigation }: any) {
         </View>
         <View style={styles.headerActions}>
           <TouchableOpacity 
+            style={styles.viewToggleButton} 
+            onPress={() => {
+              setViewMode(viewMode === 'kanban' ? 'list' : 'kanban');
+              Toast.show({
+                type: 'info',
+                text1: `📱 View Changed`,
+                text2: `Switched to ${viewMode === 'kanban' ? 'Contact List' : 'Kanban Board'} view`,
+                position: 'bottom',
+                visibilityTime: 2000,
+              });
+            }}
+          >
+            <Ionicons 
+              name={viewMode === 'kanban' ? 'list' : 'grid'} 
+              size={18} 
+              color="#4F46E5" 
+            />
+          </TouchableOpacity>
+          <TouchableOpacity 
             style={styles.refreshButton} 
             onPress={() => {
               fetchLeads();
