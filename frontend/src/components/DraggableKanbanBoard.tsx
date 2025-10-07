@@ -213,6 +213,69 @@ export default function DraggableKanbanBoard({ leads, onLeadPress, refreshContro
     });
   };
 
+  const handleDealOutcomeConfirm = async (dealStatus: 'won' | 'lost', notes?: string) => {
+    if (!dealOutcomeModal.lead || !dealOutcomeModal.pendingStage) return;
+    
+    const success = await updateLeadStage(dealOutcomeModal.lead.id, dealOutcomeModal.pendingStage);
+    
+    if (success) {
+      // TODO: Update lead with deal_status and notes using backend API
+      // For now, just show success and move the lead
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      
+      Toast.show({
+        type: 'success',
+        text1: `✅ Deal Closed - ${dealStatus === 'won' ? 'Won! 🎉' : 'Lost 😔'}`,
+        text2: `${dealOutcomeModal.lead.name} moved to Closed`,
+        position: 'top',
+        visibilityTime: 4000,
+      });
+      
+      // Show undo option
+      setUndoAction({
+        leadId: dealOutcomeModal.lead.id,
+        fromStage: dealOutcomeModal.lead.stage,
+        toStage: dealOutcomeModal.pendingStage,
+        timestamp: Date.now(),
+      });
+      
+      // Animate in undo bar
+      Animated.timing(undoAnimValue, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+      
+      // Auto-hide after 4 seconds
+      undoTimeoutRef.current = setTimeout(() => {
+        hideUndoAction();
+      }, 4000);
+      
+    } else {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Toast.show({
+        type: 'error',
+        text1: '❌ Failed to Close Deal',
+        text2: 'Please try again',
+        position: 'top',
+      });
+    }
+    
+    // Close modal
+    setDealOutcomeModal({ visible: false, lead: null, pendingStage: null });
+  };
+
+  const handleDealOutcomeCancel = () => {
+    setDealOutcomeModal({ visible: false, lead: null, pendingStage: null });
+    
+    Toast.show({
+      type: 'info',
+      text1: '↩️ Deal Closure Cancelled',
+      text2: 'Lead remains in current stage',
+      position: 'bottom',
+    });
+  };
+
   const renderColumn = (stage: any) => {
     const stageLeads = getLeadsByStage(stage.id);
     const totalValue = getTotalValue(stageLeads);
