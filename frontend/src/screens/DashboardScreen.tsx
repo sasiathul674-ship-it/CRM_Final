@@ -80,10 +80,16 @@ export default function DashboardScreen({ navigation }: any) {
     }
   };
 
+  const [taskRefreshKey, setTaskRefreshKey] = useState(0);
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await fetchDashboardStats();
+    // Force TaskManager to refresh by changing its key
+    setTaskRefreshKey(prev => prev + 1);
     setRefreshing(false);
+    
+    console.log('📊 Dashboard refreshed - tasks should update now');
   }, []);
 
   const handleTilePress = (tileType: string, value: number) => {
