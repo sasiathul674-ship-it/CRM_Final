@@ -183,6 +183,21 @@ backend:
           agent: "testing"
           comment: "🎯 ENHANCED DASHBOARD TESTING COMPLETE: Comprehensive testing of enhanced dashboard functionality completed with 100% success rate (7/7 test suites passed). Tested: (1) Enhanced dashboard tiles with proper data structure and all required fields, (2) Pipeline data grouping with accurate stage distribution across all 5 stages, (3) Recent activities with proper formatting and date sorting, (4) Dashboard API performance with excellent response times (avg 0.036s), (5) Data consistency validation ensuring stage totals match lead counts, (6) Activity metrics tracking (calls/emails) with accurate weekly counts, (7) Comprehensive error handling for authentication failures. All dashboard endpoints returning proper data structure for enhanced UI tiles. Performance is excellent with sub-40ms response times. Dashboard backend integration is production-ready and fully supports the enhanced UI improvements."
 
+  - task: "Lead Order Value Field Implementation"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Added order_value field to Lead models (LeadCreate and Lead) as Optional[float] to support deal value tracking"
+        - working: true
+          agent: "testing"
+          comment: "🎯 ORDER VALUE FIELD TESTING COMPLETE: Comprehensive testing of new order_value field completed with 100% success rate (5/5 test suites passed). Tested: (1) Lead creation with various order values (integers: 15000, decimals: 50000.00, 2500.50) - all stored correctly, (2) Lead retrieval verification - all leads returned with proper order_value field, (3) Dashboard stats integration - new leads with order values properly reflected in dashboard counts, (4) Edge case handling - zero values (0.0), null values (None), and large values (999999.99) all handled correctly, (5) Lead updates - order_value field can be modified successfully (tested $50000.0 → $55000.0). All API endpoints (POST /api/leads, GET /api/leads, PUT /api/leads/{id}, GET /api/dashboard/stats) working perfectly with the new order_value field. Data persistence, type handling (float/int), and null value management all functioning correctly. Order value functionality is production-ready."
+
 frontend:
   - task: "Authentication System (Login/Register)"
     implemented: true
