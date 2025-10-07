@@ -824,7 +824,7 @@ index d4d1dda..e69de29 100644
 ---------------+import sys
 ---------------+
 ---------------+# Get backend URL from frontend .env file
----------------+BACKEND_URL = "https://bizcard-crm.preview.emergentagent.com/api"
+---------------+BACKEND_URL = "https://strike-crm.preview.emergentagent.com/api"
 ---------------+
 ---------------+class KanbanBackendTester:
 ---------------+    def __init__(self):

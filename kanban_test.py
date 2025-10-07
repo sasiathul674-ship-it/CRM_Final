@@ -11,7 +11,7 @@ from datetime import datetime
 import sys
 
 # Get backend URL from frontend .env file
-BACKEND_URL = "https://bizcard-crm.preview.emergentagent.com/api"
+BACKEND_URL = "https://strike-crm.preview.emergentagent.com/api"
 
 class KanbanBackendTester:
     def __init__(self):

@@ -1,0 +1,99 @@
+<analysis>
+The previous AI engineer initiated the strike CRM application, building it from scratch with a mobile-first, clean UI using Expo and React Native, backed by FastAPI and MongoDB. The initial phase focused on setting up core infrastructure and a robust JWT authentication system. A key decision involved switching from Expo Router to pure React Navigation to resolve conflicts, establishing  as the entry point.
+
+Following a user-driven rebuild request, the engineer actively implemented core CRM features. This included setting up the API service layer, enhancing , and developing  for the Kanban board. Subsequent iterations involved integrating drag-and-drop functionality with haptic feedback, comprehensive lead detail views, business card sharing with analytics, a lead-specific task management system, and Google OAuth for authentication. Significant effort was put into implementing date filtering across dashboard and pipeline views using , and integrating toast notifications for better UX. Real-time updates across the dashboard and Kanban board, along with consistent display of lead attributes like order value and currency, were recurring challenges that the engineer has been actively debugging and fixing. The engineer has consistently restarted services and provided status updates, though some issues persist.
+</analysis>
+
+<product_requirements>
+The strike CRM is a mobile-first application designed for SMBs, emphasizing a clean, minimal interface and intuitive user experience.
+
+Key functionalities include:
+1.  **Kanban Lead Management Board:** A horizontal scrollable board with 5 customizable columns (New, Contacted, Follow-up, Negotiation, Closed). Lead cards display contact info (name, company, phone), last interaction, priority, and order value. It features smooth drag-and-drop, haptic feedback, swipe gestures for quick actions (call/email), and pull-to-refresh. Moving a lead to Closed should trigger a Won/Lost toggle.
+2.  **Lead Detail View:** Comprehensive contact information, communication logs (calls, emails, notes with history), next follow-up reminders, and full editing capabilities.
+3.  **Digital Business Card:** User profile setup, 3 templates, QR code generation, sharing options (QR, WhatsApp, SMS), and scan tracking analytics.
+4.  **Dashboard Analytics:** Displays key metrics (Total Leads, Calls, Emails, Cards Shared), leads by stage charts, recent activity feed, and follow-up reminders. All tiles are clickable, navigating to filtered views. A prominent date filtering system (Today, Yesterday, This Week, This Month, Custom Range with date picker) dynamically updates data. An actionable Todo list is visible.
+5.  **Settings:** Profile, business card customization, app preferences, subscription management, export data, and logout with confirmation.
+6.  **Core UX/UI:** White background, blue/gray color scheme, sans-serif typography, rounded cards with shadows, generous whitespace, minimal icons (MaterialIcons/Ionicons), bottom navigation (Dashboard, Leads, Card, Settings), Floating Action Button (FAB) for new leads, smooth animations, skeleton loaders for loading states.
+7.  **Technical:** Mobile-responsive PWA, local storage (), email/password JWT authentication, Google OAuth, QR code generation, local push notifications, CSV export,  for notifications.
+8.  **Monetization:** Free tier for 20 contacts, Starter Tier (₹299/month for 100 contacts), Growth Tier (₹699/month for 500 contacts) via payment gateways.
+
+The application aims for a fast, effortless, and low cognitive load experience, prioritizing one-handed use and thumb navigation.
+</product_requirements>
+
+<key_technical_concepts>
+-   **Frontend:** Expo SDK 54, React Native, TypeScript, React Navigation (v7+), , , , , , Google OAuth (), , .
+-   **Backend:** FastAPI, MongoDB, JWT authentication, , .
+-   **State Management:**  for authentication,  for real-time data refresh.
+-   **Routing:** React Navigation stack and tab navigators.
+</key_technical_concepts>
+
+<code_architecture>
+The project is structured into  and  directories within the root  folder.
+
+
+
+-   **/app/backend/server.py**: FastAPI backend. Defines API routes for authentication (including Google OAuth), lead management (CRUD with  and ), business card creation, activity logging, and task management. Uses JWT for security and MongoDB for data.
+    -   *Changes:* Google OAuth endpoints added.  and  added to Lead models. Task management endpoints fixed for correct request body parsing.  added to .
+-   **/app/frontend/App.tsx**: Main entry point. Manages , authentication flow, and integrates  as a global component.
+    -   *Changes:* Integrated  component globally.
+-   **/app/frontend/src/contexts/AuthContext.tsx**: Manages auth state, tokens, and onboarding status.
+    -   *Changes:* Used in  for  logic.
+-   **/app/frontend/src/navigation/AppNavigator.tsx**: Defines the main application navigation for authenticated users (tabs for Dashboard, Leads, Card, Settings).
+-   **/app/frontend/src/navigation/AuthNavigator.tsx**: Defines authentication screens (Login, Register).
+-   **/app/frontend/src/screens/AddLeadScreen.tsx**: Form for creating new leads. Enhanced with fields for , currency/country code selectors, and improved validation. Triggers a refresh callback on the LeadsScreen after successful lead creation.
+    -   *Changes:* Added , currency/country code support. Implemented callback to refresh LeadsScreen.
+-   **/app/frontend/src/screens/BusinessCardScreen.tsx**: Manages user business card profile.
+    -   *Changes:* Enhanced with sharing options (QR, WhatsApp, SMS) and analytics tracking.
+-   **/app/frontend/src/screens/DashboardScreen.tsx**: Displays key metrics and recent activities.
+    -   *Changes:* Enhanced with clickable tiles, date filtering (using ), and a manual refresh button. Integrated  to show pending tasks.  added for real-time updates. Bell icon  handler added.
+-   **/app/frontend/src/screens/LeadDetailScreen.tsx**: Comprehensive view of a single lead.
+    -   *Changes:* Replaced with an enhanced version supporting lead editing, better UI, back navigation, and a tasks tab integrating .
+-   **/app/frontend/src/screens/LeadsScreen.tsx**: Intended for Kanban board (Pipeline).
+    -   *Changes:* Uses  for drag-and-drop. Integrated date filtering. Passes refresh callback to .  added for real-time updates. Refresh button added.
+-   **/app/frontend/src/screens/OnboardingScreen.tsx**: Handles initial user onboarding.
+    -   *Changes:* Modified  to directly navigate to Dashboard with a toast, removing an intermediary alert.
+-   **/app/frontend/src/screens/SettingsScreen.tsx**: Manages app settings.
+    -   *Changes:* All buttons now have  handlers, replacing  with  messages or direct navigation. Logout now has Yes/No confirmation.
+-   **/app/frontend/src/screens/auth/RegisterScreen.tsx**: User registration.
+    -   *Changes:* Integrated  for successful registration messages.
+-   **/app/frontend/src/components/DraggableKanbanBoard.tsx**: The core Kanban board component.
+    -   *Changes:* Implemented with  for true drag-and-drop. Improved colors, scrolling, and haptic feedback. Integrated  for Closed stage.
+-   **/app/frontend/src/components/DraggableLeadCard.tsx**: Individual lead display within Kanban.
+    -   *Changes:* Displays order value (now on the right side) and uses dynamic currency symbols. Fixed call/email functionality imports. Enhanced with a proper kebab menu for quick actions.
+-   **/app/frontend/src/components/TaskManager.tsx**: Reusable component for displaying and managing tasks.
+    -   *Changes:* Created and integrated with . Uses toast notifications for status updates.
+-   **/app/frontend/src/components/DatePickerComponent.tsx**: Reusable date picker for form inputs.
+    -   *Changes:* Created using .
+-   **/app/frontend/src/components/DealOutcomeModal.tsx**: Modal for selecting Won or Lost when a lead moves to Closed.
+    -   *Changes:* Component created, but its integration with  needs to be finalized.
+-   **/app/frontend/src/hooks/useLeads.ts**: Custom hook for lead data management.
+    -   *Changes:* Added  method.
+-   **/app/frontend/src/services/api.ts**: Centralized API calls.
+    -   *Changes:* Added  interface and methods (, , , ). Updated  interface to include  and  and  information.
+</code_architecture>
+
+<pending_tasks>
+-   **Settings Section:** Still not fully functional; some buttons may still not be clickable or navigate correctly despite multiple fixes.
+-   **Lead Closure Flow (Won/Lost Toggle):** The  is created but its integration with the Kanban board drag-to-Closed functionality is still pending.
+-   **Real-Time Updates Enhanced:** Leads and tasks are not consistently updating on the Kanban board and Dashboard in real-time, even with refresh buttons and .
+-   **Expected Deal Value Display on Kanban Cards:** Although the display code exists and has been moved to the right, the user indicates the deal value is *still not highlighted/reflected*.
+-   **Contact List View & Search:** This feature (list view phone book with search capabilities in the pipeline section) is entirely pending.
+-   **Dashboard Notification Bell:** The bell icon on the dashboard is still reported as not working.
+-   **Pipeline UI:** Convert to Vertical Kanban with Wrapped Grid Cards (as per Chat 196).
+-   **Monetization:** Implement free/paid tiers and integrate payment gateways (Stripe).
+</pending_tasks>
+
+<current_work>
+Immediately before this summary request, the AI engineer was actively debugging and fixing persistent UI/UX issues reported by the user. The primary focus was on the following:
+
+1.  **Settings Section Clickability:** The engineer attempted to fix the non-functional buttons in the . The latest action was to replace all  messages with  notifications or direct navigation to ensure clickability. Specifically, the logout button was updated to provide Yes/No confirmation using an .
+2.  **Order Value Display on Kanban Cards:** The user reported that the expected deal value was still not visible or highlighted on the Kanban cards. The engineer's last action in  was to ensure the  display was positioned on the right side of the card and to update its associated styles. The underlying issue of  not consistently being stored/retrieved or visually distinct seems to persist from the user's perspective.
+3.  **Real-Time Updates:** The user continues to report that leads and tasks are not updating in real-time on the Dashboard and Kanban board. The engineer has previously implemented  and a refresh callback mechanism between  and  and added manual refresh buttons to both Dashboard and Leads screens, but the issue persists.
+4.  **Lead Closure Flow (Won/Lost Toggle):** The  component was created to handle the Won/Lost toggle when a lead moves to the Closed stage. However, the integration of this modal into the drag-and-drop flow of the  remains to be finalized.
+
+The engineer has just completed moving the order value display to the right and adding its styles in  and is restarting the frontend for verification.
+</current_work>
+
+<optional_next_step>
+Restart the frontend services and then verify the Settings section functionality and the visual display of order value on Kanban cards.
+</optional_next_step>
