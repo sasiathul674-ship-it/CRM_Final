@@ -904,6 +904,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
   },
+  tasksContainer: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 20,
+    marginTop: 16,
+    borderRadius: 16,
+    padding: 20,
+    minHeight: 300,
+  },
   overviewContainer: {
     backgroundColor: '#FFFFFF',
     marginHorizontal: 20,
