@@ -30,12 +30,37 @@ const EMAIL_TEMPLATES = [
   { id: 'proposal', subject: 'Proposal Request', body: 'Hi {name},\n\nAs discussed, I\'m sending over the proposal for...' },
 ];
 
+const STAGES = [
+  { id: 'New Leads', name: 'New Leads', color: '#3B82F6' },
+  { id: 'Contacted', name: 'Contacted', color: '#F59E0B' },
+  { id: 'Follow-up', name: 'Follow-up', color: '#EF4444' },
+  { id: 'Negotiation', name: 'Negotiation', color: '#8B5CF6' },
+  { id: 'Closed', name: 'Closed', color: '#10B981' },
+];
+
+const PRIORITIES = [
+  { id: 'low', name: 'Low', color: '#10B981' },
+  { id: 'medium', name: 'Medium', color: '#F59E0B' },
+  { id: 'high', name: 'High', color: '#EF4444' },
+];
+
 export default function LeadDetailScreen({ route, navigation }: any) {
-  const { leadId } = route.params;
-  const [lead, setLead] = useState<Lead | null>(null);
+  const { leadId, lead: passedLead } = route.params;
+  const [lead, setLead] = useState<Lead | null>(passedLead || null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [activeTab, setActiveTab] = useState('timeline');
   const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    company: '',
+    phone: '',
+    email: '',
+    address: '',
+    stage: '',
+    priority: '',
+    notes: ''
+  });
   const [showAddActivity, setShowAddActivity] = useState(false);
   const [activityType, setActivityType] = useState<'call' | 'email' | 'note'>('note');
   const [activityContent, setActivityContent] = useState('');
@@ -43,6 +68,7 @@ export default function LeadDetailScreen({ route, navigation }: any) {
   const [callDuration, setCallDuration] = useState('');
   const [emailSubject, setEmailSubject] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [updatingStage, setUpdatingStage] = useState(false);
   
   const { token } = useAuth();
 
