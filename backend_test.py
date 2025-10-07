@@ -200,81 +200,108 @@ class StrikeCRMTester:
         except Exception as e:
             self.log(f"❌ Lead CRUD test failed: {e}", "ERROR")
             return False
-    
-    def test_lead_retrieval_with_order_value(self):
-        """Test retrieving leads to verify order_value is returned correctly"""
-        self.log("Testing lead retrieval with order_value...")
+            
+    def test_lead_stage_updates(self) -> bool:
+        """Test PATCH /api/leads/{id}/stage for Kanban functionality"""
+        self.log("🎯 Testing Lead Stage Updates for Kanban")
         
         try:
-            response = self.session.get(f"{BACKEND_URL}/leads")
-            
-            if response.status_code == 200:
-                leads = response.json()
-                self.log(f"Retrieved {len(leads)} leads")
-                
-                # Verify each created lead has correct order_value
-                success_count = 0
-                for lead in leads:
-                    if lead.get("order_value") is not None:
-                        self.log(f"✅ Lead '{lead['name']}' has order_value: ${lead['order_value']}")
-                        success_count += 1
-                    else:
-                        self.log(f"⚠️ Lead '{lead['name']}' missing order_value field")
-                
-                if success_count >= len(self.created_leads):
-                    self.log("✅ All leads retrieved with order_value field")
-                    return True
-                else:
-                    self.log(f"❌ Only {success_count}/{len(self.created_leads)} leads have order_value", "ERROR")
-                    return False
-            else:
-                self.log(f"❌ Lead retrieval failed: {response.status_code} - {response.text}", "ERROR")
+            if not self.created_leads:
+                self.log("❌ No test leads available for stage testing", "ERROR")
                 return False
                 
+            # Test all valid stage transitions
+            valid_stages = ["New Leads", "Contacted", "Follow-up", "Negotiation", "Closed"]
+            lead_id = self.created_leads[0]["id"]
+            
+            for stage in valid_stages:
+                response = self.session.patch(f"{BACKEND_URL}/leads/{lead_id}/stage", params={"stage": stage})
+                
+                if response.status_code != 200:
+                    self.log(f"❌ Stage update failed for {stage}: {response.status_code} - {response.text}", "ERROR")
+                    return False
+                    
+                result = response.json()
+                if not result.get("success"):
+                    self.log(f"❌ Stage update returned unsuccessful result for {stage}", "ERROR")
+                    return False
+                    
+                self.log(f"✅ Stage updated to: {stage}")
+                
+            # Test invalid stage
+            response = self.session.patch(f"{BACKEND_URL}/leads/{lead_id}/stage", params={"stage": "InvalidStage"})
+            if response.status_code != 400:
+                self.log(f"❌ Invalid stage should return 400, got {response.status_code}", "ERROR")
+                return False
+                
+            self.log("✅ Invalid stage properly rejected")
+            
+            # Test non-existent lead
+            fake_lead_id = "non-existent-lead-id"
+            response = self.session.patch(f"{BACKEND_URL}/leads/{fake_lead_id}/stage", params={"stage": "Contacted"})
+            if response.status_code != 404:
+                self.log(f"❌ Non-existent lead should return 404, got {response.status_code}", "ERROR")
+                return False
+                
+            self.log("✅ Non-existent lead properly handled")
+            
+            return True
+            
         except Exception as e:
-            self.log(f"❌ Lead retrieval error: {str(e)}", "ERROR")
+            self.log(f"❌ Lead stage update test failed: {e}", "ERROR")
             return False
-    
-    def test_dashboard_stats_with_new_leads(self):
-        """Test dashboard stats to ensure they work with new leads"""
-        self.log("Testing dashboard stats with new leads...")
+            
+    def test_dashboard_stats_api(self) -> bool:
+        """Test GET /api/dashboard/stats for enhanced tiles"""
+        self.log("📊 Testing Dashboard Stats API")
         
         try:
             response = self.session.get(f"{BACKEND_URL}/dashboard/stats")
-            
-            if response.status_code == 200:
-                stats = response.json()
-                self.log("✅ Dashboard stats retrieved successfully")
-                
-                # Verify stats structure
-                required_fields = ["total_leads", "leads_by_stage", "this_week_calls", "this_week_emails", "recent_activities"]
-                missing_fields = [field for field in required_fields if field not in stats]
-                
-                if not missing_fields:
-                    self.log(f"✅ Dashboard stats complete - Total leads: {stats['total_leads']}")
-                    
-                    # Verify leads by stage
-                    if stats["leads_by_stage"]:
-                        self.log("✅ Leads by stage data available:")
-                        for stage, count in stats["leads_by_stage"].items():
-                            self.log(f"   - {stage}: {count} leads")
-                    
-                    # Check if our created leads are reflected in total count
-                    if stats["total_leads"] >= len(self.created_leads):
-                        self.log("✅ Dashboard reflects new lead count")
-                        return True
-                    else:
-                        self.log(f"❌ Dashboard total ({stats['total_leads']}) doesn't reflect created leads ({len(self.created_leads)})", "ERROR")
-                        return False
-                else:
-                    self.log(f"❌ Dashboard stats missing fields: {missing_fields}", "ERROR")
-                    return False
-            else:
+            if response.status_code != 200:
                 self.log(f"❌ Dashboard stats failed: {response.status_code} - {response.text}", "ERROR")
                 return False
                 
+            stats = response.json()
+            
+            # Verify required fields for enhanced tiles
+            required_fields = ["total_leads", "leads_by_stage", "this_week_calls", "this_week_emails", "recent_activities"]
+            
+            for field in required_fields:
+                if field not in stats:
+                    self.log(f"❌ Missing required field in dashboard stats: {field}", "ERROR")
+                    return False
+                    
+            self.log("✅ Dashboard stats structure valid")
+            
+            # Verify leads_by_stage has proper structure
+            leads_by_stage = stats["leads_by_stage"]
+            if not isinstance(leads_by_stage, dict):
+                self.log("❌ leads_by_stage should be a dictionary", "ERROR")
+                return False
+                
+            self.log(f"✅ Leads by stage: {leads_by_stage}")
+            
+            # Verify recent_activities is a list
+            recent_activities = stats["recent_activities"]
+            if not isinstance(recent_activities, list):
+                self.log("❌ recent_activities should be a list", "ERROR")
+                return False
+                
+            self.log(f"✅ Recent activities count: {len(recent_activities)}")
+            
+            # Verify numeric fields
+            numeric_fields = ["total_leads", "this_week_calls", "this_week_emails"]
+            for field in numeric_fields:
+                if not isinstance(stats[field], int):
+                    self.log(f"❌ {field} should be an integer, got {type(stats[field])}", "ERROR")
+                    return False
+                    
+            self.log(f"✅ Dashboard metrics - Total leads: {stats['total_leads']}, Calls: {stats['this_week_calls']}, Emails: {stats['this_week_emails']}")
+            
+            return True
+            
         except Exception as e:
-            self.log(f"❌ Dashboard stats error: {str(e)}", "ERROR")
+            self.log(f"❌ Dashboard stats test failed: {e}", "ERROR")
             return False
     
     def test_order_value_edge_cases(self):
