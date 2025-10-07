@@ -379,6 +379,221 @@ class StrikeCRMTester:
         except Exception as e:
             self.log(f"❌ Activity logging test failed: {e}", "ERROR")
             return False
+
+    def test_task_management_apis(self) -> bool:
+        """Test comprehensive Task Management APIs - Focus area from review request"""
+        self.log("📋 Testing Task Management APIs (CRITICAL FOCUS)")
+        
+        try:
+            created_tasks = []
+            
+            # Test 1: POST /api/tasks - Create tasks with different configurations
+            self.log("Testing POST /api/tasks - Task Creation")
+            
+            test_tasks = [
+                {
+                    "title": "Follow up with John Smith",
+                    "description": "Call to discuss enterprise solution pricing",
+                    "lead_id": self.created_leads[0]["id"] if self.created_leads else None,
+                    "due_date": (datetime.now().replace(microsecond=0) + timedelta(days=3)).isoformat(),
+                    "priority": "high",
+                    "status": "pending"
+                },
+                {
+                    "title": "Prepare proposal for Sarah Johnson",
+                    "description": "Create detailed marketing automation proposal",
+                    "lead_id": self.created_leads[1]["id"] if len(self.created_leads) > 1 else None,
+                    "priority": "medium",
+                    "status": "pending"
+                },
+                {
+                    "title": "Send follow-up email to Mike Wilson",
+                    "description": "Follow up on consulting engagement discussion",
+                    "priority": "low",
+                    "status": "completed"
+                },
+                {
+                    "title": "General CRM system maintenance",
+                    "description": "Weekly system maintenance and data cleanup",
+                    "priority": "medium",
+                    "status": "pending"
+                }
+            ]
+            
+            for i, task_data in enumerate(test_tasks):
+                response = self.session.post(f"{BACKEND_URL}/tasks", json=task_data)
+                if response.status_code != 200:
+                    self.log(f"❌ Task creation failed for task {i+1}: {response.status_code} - {response.text}", "ERROR")
+                    return False
+                    
+                task = response.json()
+                created_tasks.append(task)
+                
+                # Verify task structure
+                required_fields = ["id", "title", "priority", "status", "user_id", "created_at"]
+                for field in required_fields:
+                    if field not in task:
+                        self.log(f"❌ Missing field {field} in created task", "ERROR")
+                        return False
+                        
+                self.log(f"✅ Task created: '{task['title']}' (Priority: {task['priority']}, Status: {task['status']})")
+                
+            # Test 2: GET /api/tasks - Retrieve all tasks
+            self.log("Testing GET /api/tasks - All Tasks Retrieval")
+            
+            response = self.session.get(f"{BACKEND_URL}/tasks")
+            if response.status_code != 200:
+                self.log(f"❌ Get all tasks failed: {response.status_code} - {response.text}", "ERROR")
+                return False
+                
+            all_tasks = response.json()
+            if not isinstance(all_tasks, list):
+                self.log("❌ Tasks response should be a list", "ERROR")
+                return False
+                
+            if len(all_tasks) < len(created_tasks):
+                self.log(f"❌ Expected at least {len(created_tasks)} tasks, got {len(all_tasks)}", "ERROR")
+                return False
+                
+            self.log(f"✅ Retrieved {len(all_tasks)} total tasks")
+            
+            # Test 3: GET /api/tasks?status=pending - Filter by status
+            self.log("Testing GET /api/tasks?status=pending - Filtered Tasks")
+            
+            response = self.session.get(f"{BACKEND_URL}/tasks?status=pending")
+            if response.status_code != 200:
+                self.log(f"❌ Get pending tasks failed: {response.status_code} - {response.text}", "ERROR")
+                return False
+                
+            pending_tasks = response.json()
+            if not isinstance(pending_tasks, list):
+                self.log("❌ Pending tasks response should be a list", "ERROR")
+                return False
+                
+            # Verify all returned tasks have pending status
+            for task in pending_tasks:
+                if task["status"] != "pending":
+                    self.log(f"❌ Non-pending task found in pending filter: {task['title']} has status {task['status']}", "ERROR")
+                    return False
+                    
+            self.log(f"✅ Retrieved {len(pending_tasks)} pending tasks (filter working correctly)")
+            
+            # Test 4: GET /api/tasks?status=completed - Filter by completed status
+            self.log("Testing GET /api/tasks?status=completed - Completed Tasks Filter")
+            
+            response = self.session.get(f"{BACKEND_URL}/tasks?status=completed")
+            if response.status_code != 200:
+                self.log(f"❌ Get completed tasks failed: {response.status_code} - {response.text}", "ERROR")
+                return False
+                
+            completed_tasks = response.json()
+            if not isinstance(completed_tasks, list):
+                self.log("❌ Completed tasks response should be a list", "ERROR")
+                return False
+                
+            # Verify all returned tasks have completed status
+            for task in completed_tasks:
+                if task["status"] != "completed":
+                    self.log(f"❌ Non-completed task found in completed filter: {task['title']} has status {task['status']}", "ERROR")
+                    return False
+                    
+            self.log(f"✅ Retrieved {len(completed_tasks)} completed tasks (filter working correctly)")
+            
+            # Test 5: GET /api/leads/{id}/tasks - Lead-specific tasks
+            if self.created_leads:
+                self.log("Testing GET /api/leads/{id}/tasks - Lead-Specific Tasks")
+                
+                lead_id = self.created_leads[0]["id"]
+                response = self.session.get(f"{BACKEND_URL}/leads/{lead_id}/tasks")
+                if response.status_code != 200:
+                    self.log(f"❌ Get lead tasks failed: {response.status_code} - {response.text}", "ERROR")
+                    return False
+                    
+                lead_tasks = response.json()
+                if not isinstance(lead_tasks, list):
+                    self.log("❌ Lead tasks response should be a list", "ERROR")
+                    return False
+                    
+                # Verify all returned tasks belong to the specified lead
+                for task in lead_tasks:
+                    if task.get("lead_id") != lead_id:
+                        self.log(f"❌ Task doesn't belong to specified lead: {task['title']} has lead_id {task.get('lead_id')}", "ERROR")
+                        return False
+                        
+                self.log(f"✅ Retrieved {len(lead_tasks)} tasks for lead {lead_id}")
+            
+            # Test 6: Task data structure validation
+            self.log("Testing Task Data Structure Consistency")
+            
+            for task in all_tasks:
+                # Check required fields
+                required_fields = ["id", "title", "priority", "status", "user_id", "created_at"]
+                for field in required_fields:
+                    if field not in task:
+                        self.log(f"❌ Missing required field {field} in task: {task.get('title', 'Unknown')}", "ERROR")
+                        return False
+                        
+                # Check valid priority values
+                if task["priority"] not in ["high", "medium", "low"]:
+                    self.log(f"❌ Invalid priority value: {task['priority']} in task: {task['title']}", "ERROR")
+                    return False
+                    
+                # Check valid status values
+                if task["status"] not in ["pending", "completed", "cancelled"]:
+                    self.log(f"❌ Invalid status value: {task['status']} in task: {task['title']}", "ERROR")
+                    return False
+                    
+            self.log("✅ All tasks have consistent data structure")
+            
+            # Test 7: Task update functionality
+            if created_tasks:
+                self.log("Testing Task Update Functionality")
+                
+                task_to_update = created_tasks[0]
+                update_data = {
+                    "title": task_to_update["title"] + " (Updated)",
+                    "description": "Updated description for testing",
+                    "priority": "medium",
+                    "status": "pending"
+                }
+                
+                response = self.session.put(f"{BACKEND_URL}/tasks/{task_to_update['id']}", json=update_data)
+                if response.status_code != 200:
+                    self.log(f"❌ Task update failed: {response.status_code} - {response.text}", "ERROR")
+                    return False
+                    
+                updated_task = response.json()
+                if updated_task["title"] != update_data["title"]:
+                    self.log(f"❌ Task title not updated correctly", "ERROR")
+                    return False
+                    
+                self.log(f"✅ Task updated successfully: {updated_task['title']}")
+            
+            # Test 8: Task status update via PATCH
+            if created_tasks:
+                self.log("Testing PATCH /api/tasks/{id}/status - Status Updates")
+                
+                task_to_update = created_tasks[1] if len(created_tasks) > 1 else created_tasks[0]
+                status_update = {"status": "completed"}
+                
+                response = self.session.patch(f"{BACKEND_URL}/tasks/{task_to_update['id']}/status", json=status_update)
+                if response.status_code != 200:
+                    self.log(f"❌ Task status update failed: {response.status_code} - {response.text}", "ERROR")
+                    return False
+                    
+                result = response.json()
+                if not result.get("success"):
+                    self.log("❌ Task status update returned unsuccessful result", "ERROR")
+                    return False
+                    
+                self.log(f"✅ Task status updated to completed")
+            
+            self.log("🎉 ALL TASK MANAGEMENT API TESTS PASSED!")
+            return True
+            
+        except Exception as e:
+            self.log(f"❌ Task management API test failed: {e}", "ERROR")
+            return False
             
     def cleanup_test_data(self):
         """Clean up test data created during testing"""
