@@ -101,7 +101,12 @@ export default function AddLeadScreen({ navigation }: any) {
         navigation.goBack();
       }
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to create lead. Please try again.');
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: error.message || 'Failed to create lead. Please try again.',
+        visibilityTime: 4000,
+      });
     } finally {
       setIsSubmitting(false);
     }
