@@ -370,4 +370,20 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: '#F8FAFC',
   },
+  orderValueContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0FDF4',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+  },
+  orderValueText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#059669',
+    marginLeft: 4,
+  },
 });
