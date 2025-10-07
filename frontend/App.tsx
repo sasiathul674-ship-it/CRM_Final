@@ -38,6 +38,7 @@ export default function App() {
         <View style={styles.container}>
           <AppContent />
         </View>
+        <Toast />
       </NavigationContainer>
     </AuthProvider>
   );
