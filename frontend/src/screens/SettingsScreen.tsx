@@ -39,13 +39,19 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => Alert.alert('Edit Profile', 'Profile editing functionality coming soon!')}
+          >
             <Ionicons name="person-outline" size={20} color="#6B7280" />
             <Text style={styles.menuText}>Edit Profile</Text>
             <Ionicons name="chevron-forward" size={20} color="#D1D5DB" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => Alert.alert('Business Card', 'Navigate to Business Card tab to manage your card settings.')}
+          >
             <Ionicons name="card-outline" size={20} color="#6B7280" />
             <Text style={styles.menuText}>Business Card Settings</Text>
             <Ionicons name="chevron-forward" size={20} color="#D1D5DB" />
