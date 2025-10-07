@@ -410,6 +410,17 @@ export default function DraggableKanbanBoard({ leads, onLeadPress, refreshContro
           </TouchableOpacity>
         </Animated.View>
       )}
+
+      {/* Deal Outcome Modal */}
+      <DealOutcomeModal
+        visible={dealOutcomeModal.visible}
+        leadName={dealOutcomeModal.lead?.name || ''}
+        leadId={dealOutcomeModal.lead?.id || ''}
+        orderValue={dealOutcomeModal.lead?.order_value}
+        currency={dealOutcomeModal.lead?.currency}
+        onClose={handleDealOutcomeCancel}
+        onConfirm={handleDealOutcomeConfirm}
+      />
     </View>
   );
 }
