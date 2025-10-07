@@ -394,12 +394,28 @@ export default function TaskManager({
           
           <View style={styles.formGroup}>
             <Text style={styles.formLabel}>Due Date (Optional)</Text>
-            <TextInput
-              style={styles.formInput}
-              value={taskForm.due_date}
-              onChangeText={(text) => setTaskForm({...taskForm, due_date: text})}
-              placeholder="YYYY-MM-DD or leave empty"
-            />
+            <TouchableOpacity 
+              style={[styles.formInput, styles.dateInputButton]}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <View style={styles.dateInputContainer}>
+                <Ionicons name="calendar-outline" size={20} color="#6B7280" />
+                <Text style={[styles.dateInputText, taskForm.due_date && styles.dateSelectedText]}>
+                  {taskForm.due_date ? new Date(taskForm.due_date).toLocaleDateString() : 'Select due date'}
+                </Text>
+              </View>
+              {taskForm.due_date && (
+                <TouchableOpacity 
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    setTaskForm({...taskForm, due_date: ''});
+                  }}
+                  style={styles.clearDateButton}
+                >
+                  <Ionicons name="close-circle" size={20} color="#9CA3AF" />
+                </TouchableOpacity>
+              )}
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
