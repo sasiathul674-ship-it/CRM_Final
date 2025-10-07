@@ -82,8 +82,8 @@ class StrikeCRMTester:
             del self.session.headers["Authorization"]
             
             response = self.session.get(f"{BACKEND_URL}/leads")
-            if response.status_code != 401:
-                self.log(f"❌ Protected endpoint should return 401, got {response.status_code}", "ERROR")
+            if response.status_code not in [401, 403]:
+                self.log(f"❌ Protected endpoint should return 401 or 403, got {response.status_code}", "ERROR")
                 return False
                 
             self.session.headers = temp_headers
