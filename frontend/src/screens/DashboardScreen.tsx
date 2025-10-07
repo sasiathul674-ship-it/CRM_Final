@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import TaskManager from '../components/TaskManager';
+import DatePickerComponent from '../components/DatePickerComponent';
 import Constants from 'expo-constants';
 
 const { width } = Dimensions.get('window');
