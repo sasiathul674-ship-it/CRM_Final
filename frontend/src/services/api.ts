@@ -13,6 +13,7 @@ export interface Lead {
   priority: string;
   notes?: string;
   order_value?: number;  // Deal value in currency
+  currency?: string;     // Currency code (INR, USD, GBP, EUR)
   deal_status?: string;  // "won", "lost" - only for Closed stage
   user_id: string;
   created_at: string;
